@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Home - BridgeGen{% endblock %}
+
+{% block content %}
+<div class="hero-gradient text-center">
+    <div class="container">
+        <h1 class="display-3 fw-bold mb-4">
+            <i class="bi bi-heart-fill"></i> Welcome to BridgeGen
+        </h1>
+        <p class="lead fs-4 mb-5">Connect youth and elders through meaningful communities. Share stories, learn together, and build lasting intergenerational connections.</p>
+        {% if not current_user or not current_user.is_authenticated %}
+            <a href="/register" class="btn btn-light btn-lg me-3">
+                <i class="bi bi-rocket-takeoff"></i> Get Started
+            </a>
+            <a href="/login" class="btn btn-outline-light btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        {% else %}
+            <a href="/communities" class="btn btn-light btn-lg">
+                <i class="bi bi-house-door"></i> Browse Communities
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3" style="font-size: 3rem; color: var(--primary-color);">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <h4 class="card-title">Join Communities</h4>
+                <p class="card-text text-muted">Discover and join communities that match your interests. Connect with people across generations.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3" style="font-size: 3rem; color: var(--accent-color);">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <h4 class="card-title">Create Your Own</h4>
+                <p class="card-text text-muted">Start your own community and bring people together around shared interests and activities.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <div class="mb-3" style="font-size: 3rem; color: var(--success-color);">
+                    <i class="bi bi-chat-heart-fill"></i>
+                </div>
+                <h4 class="card-title">Build Connections</h4>
+                <p class="card-text text-muted">Share knowledge, stories, and experiences. Build meaningful relationships that span generations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

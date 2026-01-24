@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Create Community - BridgeGen{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header" style="background: var(--gradient); color: white;">
+                <h3 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Create New Community
+                </h3>
+            </div>
+            <div class="card-body p-5">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-tag"></i> Community Name
+                        </label>
+                        <input type="text" name="name" class="form-control form-control-lg" required placeholder="Enter community name">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-card-text"></i> Description
+                        </label>
+                        <textarea name="description" class="form-control" rows="4" required placeholder="Describe your community..."></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-funnel"></i> Category
+                        </label>
+                        <select name="category" class="form-select form-select-lg" required>
+                            <option value="">Select a category...</option>
+                            <option value="hobbies">Hobbies & Interests</option>
+                            <option value="tech">Technology</option>
+                            <option value="arts">Arts & Culture</option>
+                            <option value="sports">Sports & Fitness</option>
+                            <option value="education">Education</option>
+                            <option value="social">Social</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <a href="/communities" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                            <i class="bi bi-check-circle"></i> Create Community
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

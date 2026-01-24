@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Communities - BridgeGen{% endblock %}
+
+{% block content %}
+<div class="hero-gradient text-center mb-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="bi bi-house-heart"></i> Community Hub
+        </h1>
+        <p class="lead">Connect with like-minded people across generations. Join communities to share stories, learn together, and build meaningful intergenerational connections.</p>
+    </div>
+</div>
+
+<!-- Search and Create -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3" method="GET">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--gradient); color: white;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="{{ search }}" 
+                           placeholder="Search communities..." class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text" style="background: var(--gradient); color: white;">
+                        <i class="bi bi-funnel"></i>
+                    </span>
+                    <select name="category" class="form-select">
+                        <option value="all" {% if category == 'all' %}selected{% endif %}>All Categories</option>
+                        <option value="hobbies">Hobbies & Interests</option>
+                        <option value="tech">Technology</option>
+                        <option value="arts">Arts & Culture</option>
+                        <option value="sports">Sports & Fitness</option>
+                        <option value="education">Education</option>
+                        <option value="social">Social</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+        <div class="mt-3 text-end">
+            <a href="/create-community" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Create Community
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="discover-tab" data-bs-toggle="tab" href="#discover" role="tab">
+            <i class="bi bi-compass"></i> Discover
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="my-tab" data-bs-toggle="tab" href="#my" role="tab">
+            <i class="bi bi-star-fill"></i> My Communities 
+            <span class="badge bg-secondary">{{ my_communities|length }}</span>
+        </a>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content">
+    <!-- Discover Tab -->
+    <div class="tab-pane fade show active" id="discover" role="tabpanel">
+        {% if discover_communities %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for community in discover_communities %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div style="height: 200px; background: var(--gradient); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: white; opacity: 0.3;">
+                                    {% if community.category == 'tech' %}
+                                        <i class="bi bi-laptop"></i>
+                                    {% elif community.category == 'arts' %}
+                                        <i class="bi bi-palette"></i>
+                                    {% elif community.category == 'sports' %}
+                                        <i class="bi bi-trophy"></i>
+                                    {% elif community.category == 'education' %}
+                                        <i class="bi bi-book"></i>
+                                    {% elif community.category == 'social' %}
+                                        <i class="bi bi-people"></i>
+                                    {% else %}
+                                        <i class="bi bi-heart"></i>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-light text-dark position-absolute top-0 end-0 m-2">
+                                    <i class="bi bi-globe"></i> Public
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-{{ 'laptop' if community.category == 'tech' else 'palette' if community.category == 'arts' else 'trophy' if community.category == 'sports' else 'book' if community.category == 'education' else 'people' if community.category == 'social' else 'heart' }}"></i>
+                                    {{ community.name }}
+                                </h5>
+                                <span class="category-badge category-{{ community.category }}">
+                                    {{ community.category|title }}
+                                </span>
+                                <p class="card-text text-muted mt-2">{{ community.description|truncate(100) }}</p>
+                                <small class="text-muted">
+                                    <i class="bi bi-people"></i> {{ community.member_count }} members
+                                </small>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="/communities/{{ community.id }}" class="btn btn-sm btn-outline-primary me-2">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="/communities/{{ community.id }}/join" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Join
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div style="font-size: 5rem; color: #ccc; margin-bottom: 20px;">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <p class="lead">No communities to discover.</p>
+                <a href="/create-community" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create First Community
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- My Communities Tab -->
+    <div class="tab-pane fade" id="my" role="tabpanel">
+        {% if my_communities %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for community in my_communities %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div style="height: 200px; background: var(--gradient-pink); position: relative; overflow: hidden;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; color: white; opacity: 0.3;">
+                                    {% if community.category == 'tech' %}
+                                        <i class="bi bi-laptop"></i>
+                                    {% elif community.category == 'arts' %}
+                                        <i class="bi bi-palette"></i>
+                                    {% elif community.category == 'sports' %}
+                                        <i class="bi bi-trophy"></i>
+                                    {% elif community.category == 'education' %}
+                                        <i class="bi bi-book"></i>
+                                    {% elif community.category == 'social' %}
+                                        <i class="bi bi-people"></i>
+                                    {% else %}
+                                        <i class="bi bi-heart"></i>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-success position-absolute top-0 end-0 m-2">
+                                    <i class="bi bi-check-circle"></i> Member
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="bi bi-{{ 'laptop' if community.category == 'tech' else 'palette' if community.category == 'arts' else 'trophy' if community.category == 'sports' else 'book' if community.category == 'education' else 'people' if community.category == 'social' else 'heart' }}"></i>
+                                    {{ community.name }}
+                                </h5>
+                                <span class="category-badge category-{{ community.category }}">
+                                    {{ community.category|title }}
+                                </span>
+                                <p class="card-text mt-2">{{ community.description|truncate(100) }}</p>
+                            </div>
+                            <div class="card-footer bg-white">
+                                <a href="/communities/{{ community.id }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-arrow-right-circle"></i> Visit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <div style="font-size: 5rem; color: #ccc; margin-bottom: 20px;">
+                    <i class="bi bi-star"></i>
+                </div>
+                <p class="lead">You haven't joined any communities yet.</p>
+                <p class="text-muted">Join communities to connect with others!</p>
+                <a href="#discover" class="btn btn-primary" onclick="document.getElementById('discover-tab').click()">
+                    <i class="bi bi-compass"></i> Discover Communities
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
