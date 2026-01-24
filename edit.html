@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Edit Event</h2>
+<form method="post" class="card" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+  <label>{{ form.title.label }}</label>{{ form.title(class="input") }}
+  <label>{{ form.description.label }}</label>{{ form.description(class="input") }}
+  <div class="grid">
+    <div>
+      <label>{{ form.date.label }}</label>{{ form.date(class="input") }}
+    </div>
+    <div>
+      <label>{{ form.time.label }}</label>{{ form.time(class="input") }}
+    </div>
+  </div>
+  <div class="grid">
+    <div>
+      <label>{{ form.category.label }}</label>{{ form.category(class="input") }}
+    </div>
+    <div>
+      <label>{{ form.location.label }}</label>{{ form.location(class="input") }}
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <label>{{ form.slots.label }}</label>{{ form.slots(class="input") }}
+    </div>
+
+    <div>
+      <label>Upload Image</label>
+      <div class="file-drop" id="file-drop">
+        <div class="file-drop-inner">
+          <div id="file-preview" class="file-preview">
+            {% if event.image %}
+              <img src="{{ url_for('static', filename='uploads/' + event.image) }}" alt="current image">
+            {% else %}
+              <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="default image">
+            {% endif %}
+          </div>
+          <div class="file-drop-text">Drag & drop image here or click to choose</div>
+        </div>
+        {{ form.image(class="input", id="image-input", style="display:none;") }}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Update</button>
+    <a class="btn btn-secondary" href="{{ url_for('event_details', event_id=event.id) }}">Cancel</a>
+  </div>
+</form>
+
+<script>
+// drag & drop + preview
+const drop = document.getElementById('file-drop');
+const input = document.getElementById('image-input');
+const preview = document.getElementById('file-preview');
+
+function showPreview(file){
+  const img = document.createElement('img');
+  img.src = URL.createObjectURL(file);
+  img.onload = () => URL.revokeObjectURL(img.src);
+  preview.innerHTML = '';
+  preview.appendChild(img);
+}
+
+drop.addEventListener('click', () => input.click());
+
+['dragenter', 'dragover'].forEach(ev => {
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('dragover'); });
+});
+['dragleave', 'drop'].forEach(ev => {
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('dragover'); });
+});
+
+drop.addEventListener('drop', e => {
+  const files = e.dataTransfer.files;
+  if (files && files[0]) {
+    input.files = files; // assign files to the hidden input so WTForms will receive them
+    showPreview(files[0]);
+  }
+});
+
+input.addEventListener('change', () => {
+  if (input.files && input.files[0]) showPreview(input.files[0]);
+});
+</script>
+{% endblock %}

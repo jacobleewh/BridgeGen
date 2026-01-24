@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Events</h2>
+
+<h3>Calendar — {{ month_name }} {{ sel_year }}</h3>
+<div style="margin-bottom:8px;">
+  <a class="btn btn-secondary" href="{{ url_for('my_events', month=prev_month, year=prev_year) }}">← Prev</a>
+  <a class="btn btn-secondary" href="{{ url_for('my_events', month=next_month, year=next_year) }}">Next →</a>
+</div>
+
+<div class="calendar" style="grid-template-columns: repeat(7, 1fr);">
+  <div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div>
+  <div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div><div class="weekday">Sun</div>
+
+  {# render leading blanks to align first day of month #}
+  {% for i in range(leading_blanks) %}
+    <div class="day" style="background:transparent;border:none;"></div>
+  {% endfor %}
+
+  {# render actual days #}
+  {% for d in range(1, num_days + 1) %}
+    {% set attended = d in attended_days %}
+    {% set highlight = (d in joined_days) and not attended %}
+    <div class="day {% if attended %}attended{% elif highlight %}highlight{% endif %}">
+      {{ d }}
+    </div>
+  {% endfor %}
+</div>
+
+<div class="grid" style="margin-top:16px;">
+  <div>
+    <h3>Events Joined</h3>
+    {% for e in joined %}
+      <div class="card">
+        <h4>{{ e.title }}</h4>
+        <p>{{ e.description }}</p>
+        <p>Date: {{ e.date.strftime('%d %b %Y') }} | Time: {{ e.time.strftime('%-I:%M %p') }}</p>
+        <p>Location: {{ e.location }} | Category: {{ e.category }}</p>
+        <div>
+          <form method="post" action="{{ url_for('leave_event', event_id=e.id) }}" style="display:inline;">
+            <button class="btn btn-danger" type="submit">Leave</button>
+          </form>
+          <a class="btn btn-secondary" href="{{ url_for('event_details', event_id=e.id) }}">Details</a>
+          <a class="btn btn-primary" href="{{ url_for('reflection', event_id=e.id) }}">Submit Reflection</a>
+        </div>
+      </div>
+    {% else %}
+      <p>No joined events.</p>
+    {% endfor %}
+  </div>
+
+  <div>
+    <h3>Events Created</h3>
+    {% for e in created %}
+      <div class="card">
+        <h4>{{ e.title }}</h4>
+        <p>{{ e.description }}</p>
+        <p>{{ e.date.strftime('%d %b %Y') }} | {{ e.time.strftime('%-I:%M %p') }}</p>
+        <div>
+          <a class="btn btn-secondary" href="{{ url_for('edit_event', event_id=e.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('delete_event', event_id=e.id) }}" style="display:inline;" onsubmit="return confirm('Delete this event?');">
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </form>
+          <!-- new creator-specific reflection link -->
+          <a class="btn btn-primary" href="{{ url_for('creator_reflection', event_id=e.id) }}">Post Reflection</a>
+        </div>
+      </div>
+    {% else %}
+      <p>No created events.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

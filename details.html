@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Activity Details</h2>
+
+<div class="card event-card">
+  <div class="event-body">
+    <div class="event-text">
+      <h3>{{ event.title }}</h3>
+      <p>{{ event.description }}</p>
+      <p><strong>Date & Time:</strong> {{ event.date.strftime('%d %b %Y') }}, {{ event.time.strftime('%-I:%M %p') }}</p>
+      <p><strong>Location:</strong> {{ event.location }}</p>
+      <p><strong>Category:</strong> {{ event.category }}</p>
+      <p><strong>Slots Available:</strong> {{ event.slots }}</p>
+      <p><strong>Host / Creator:</strong> {{ event.host }}</p>
+
+      <div>
+        {% set is_joined = (joined if joined is defined else False) %}
+        {% if is_joined %}
+          <form method="post" action="{{ url_for('leave_event', event_id=event.id) }}" style="display:inline;">
+            <button class="btn btn-danger" type="submit">Leave</button>
+          </form>
+        {% else %}
+          <form method="post" action="{{ url_for('join_event', event_id=event.id) }}" style="display:inline;">
+            <button class="btn btn-primary" type="submit">Join</button>
+          </form>
+        {% endif %}
+        <a class="btn btn-secondary" href="{{ url_for('browse_events') }}">Go Back</a>
+      </div>
+    </div>
+
+    <div class="event-image-wrap">
+      <img src="{{ url_for('static', filename='uploads/' + (event.image if event.image else 'default.png')) }}" alt="Event image" class="event-image">
+    </div>
+  </div>
+</div>
+{% endblock %}

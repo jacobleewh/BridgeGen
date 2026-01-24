@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Creator Reflection for {{ event.title }}</h2>
+<p class="card">Use this form to record organizer notes, lessons learned and overall event rating.</p>
+<form method="post" class="card">
+  {{ form.hidden_tag() }}
+  <label>{{ form.rating.label }}</label>
+  {{ form.rating(class="input") }}
+  <label>{{ form.comments.label }}</label>
+  {{ form.comments(rows=6, class="input fixed-textarea") }}
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ form.submit.label.text }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('my_events') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

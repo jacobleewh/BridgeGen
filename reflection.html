@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Reflection for {{ event.title }}</h2>
+<form method="post" class="card">
+  {{ form.hidden_tag() }}
+  <label>{{ form.rating.label }}</label>
+  {{ form.rating(class="input") }}
+  <label>{{ form.comments.label }}</label>
+  {{ form.comments(class="input") }}
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Submit</button>
+    <a class="btn btn-secondary" href="{{ url_for('my_events') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

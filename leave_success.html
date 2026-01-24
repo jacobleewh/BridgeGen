@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Left Event</h2>
+<div class="card">
+  <p>You have left: <strong>{{ event.title }}</strong></p>
+  <a class="btn btn-primary" href="{{ url_for('my_events') }}">Go to My Events</a>
+  <a class="btn btn-secondary" href="{{ url_for('browse_events') }}">Back to Browse</a>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Browse Upcoming Events</h2>
+
+<form method="get" class="card">
+  <div class="grid">
+    <div>
+      <label>Search</label>
+      <input class="input" type="text" name="q" value="{{ q or '' }}" placeholder="Search events...">
+    </div>
+    <div>
+      <label>Category</label>
+      <select class="input" name="category">
+        <option value="">All</option>
+        <option value="Cooking" {% if category=='Cooking' %}selected{% endif %}>Cooking</option>
+        <option value="Craft" {% if category=='Craft' %}selected{% endif %}>Craft</option>
+        <option value="Technology" {% if category=='Digital' %}selected{% endif %}>Digital</option>
+        <option value="Environmental" {% if category=='Environmental' %}selected{% endif %}>Environmental</option>
+        <option value="Fitness" {% if category=='Fitness' %}selected{% endif %}>Fitness</option>
+        <option value="Music" {% if category=='Music' %}selected{% endif %}>Music</option>
+        <option value="Outdoor" {% if category=='Outdoor' %}selected{% endif %}>Outdoor</option>
+        <option value="Social" {% if category=='Social' %}selected{% endif %}>Social</option>
+        <option value="Art" {% if category=='Art' %}selected{% endif %}>Art</option>
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-secondary" type="submit">Filter</button>
+</form>
+
+{% for e in events %}
+  <div class="card event-card">
+    <div class="event-body">
+      <div class="event-text">
+        <h3>{{ e.title }}</h3>
+        <p>{{ e.description }}</p>
+        <p>Date: {{ e.date.strftime('%d %b %Y') }} | Time: {{ e.time.strftime('%-I:%M %p') }}</p>
+        <p>Location: {{ e.location }} | Category: {{ e.category }} | Slots: {{ e.slots }}</p>
+
+        <div>
+          <a class="btn btn-secondary" href="{{ url_for('event_details', event_id=e.id) }}">View Details</a>
+          {% if (current_user is defined and current_user and current_user.name == e.host) %}
+            <a class="btn btn-secondary" href="{{ url_for('edit_event', event_id=e.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('delete_event', event_id=e.id) }}" style="display:inline;" onsubmit="return confirm('Delete this event?');">
+              <button class="btn btn-danger" type="submit">Delete</button>
+            </form>
+          {% else %}
+            {% set joined_ids_local = (joined_ids if joined_ids is defined else []) %}
+            {% if e.id in joined_ids_local %}
+              <form method="post" action="{{ url_for('leave_event', event_id=e.id) }}" style="display:inline;">
+                <button class="btn btn-danger" type="submit">Leave</button>
+              </form>
+            {% else %}
+              <form method="post" action="{{ url_for('join_event', event_id=e.id) }}" style="display:inline;">
+                <button class="btn btn-primary" type="submit">Join</button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="event-image-wrap">
+        <img src="{{ url_for('static', filename='uploads/' + (e.image if e.image else 'default.png')) }}" alt="Event image" class="event-image">
+      </div>
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

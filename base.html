@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BridgeGen</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav class="navbar">
+  <div style="display:flex; gap:20px;">
+    <a href="/story">Story</a>
+    <a href="/events">Events</a>
+    <a href="/community">Community</a>
+    <a href="/chat">Chats</a>
+    <a href="/profile">👤</a>
+  </div>
+  <div style="margin-left:auto;">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="BridgeGen Logo" style="height:40px;">
+  </div>
+</nav>
+<div class="card" style="text-align:center; margin-bottom:20px;">
+  <h1>Events</h1>
+  <p>Join and Create Events!!!</p>
+  <div style="margin-top:10px;">
+    <a class="btn {% if request.endpoint=='browse_events' %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ url_for('browse_events') }}">Browse</a>
+    <a class="btn {% if request.endpoint=='create_event' %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ url_for('create_event') }}">Create</a>
+    <a class="btn {% if request.endpoint=='my_events' %}btn-primary{% else %}btn-secondary{% endif %}" href="{{ url_for('my_events') }}">My Events</a>
+  </div>
+</div>
+  <div class="container">
+    {% include 'components/flash.html' %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer class="footer">
+    <div>
+      <strong>Navigate:</strong> Home · Profile · Chat · Story · Activity · Community
+    </div>
+    <div>
+      <strong>Quick Actions:</strong> Create Event · Join Event · Create Story · Create Community
+    </div>
+    <div>
+      <strong>Contact Us:</strong> Email: bridgegen@gmail.com · Contact: 1234 5678
+    </div>
+  </footer>
+</body>
+</html>
