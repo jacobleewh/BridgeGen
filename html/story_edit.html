@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg">
+        <div class="card-header" style="background: var(--gradient); color: white;">
+          <h3 class="mb-0">
+            <i class="bi bi-pencil-square"></i> Edit Story
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" class="row g-4">
+            
+            <!-- Title and Date Row -->
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-heading"></i> Title
+              </label>
+              <input class="form-control form-control-lg" name="title" value="{{ story.title }}" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-calendar"></i> Date
+              </label>
+              <input type="date" class="form-control form-control-lg" name="date" value="{{ story.date }}">
+            </div>
+
+            <!-- Description with Voice Recording -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-text"></i> Description
+              </label>
+              <textarea class="form-control form-control-lg" id="descriptionField" name="description" rows="5" required>{{ story.description }}</textarea>
+              
+              <!-- Voice recording controls -->
+              <div class="mt-3">
+                <button class="btn btn-outline-success rounded-pill" type="button" onclick="startRecording()">
+                  <i class="bi bi-mic-fill"></i> Start Recording
+                </button>
+                <button class="btn btn-outline-danger rounded-pill ms-2" type="button" onclick="stopRecording()">
+                  <i class="bi bi-stop-fill"></i> Stop Recording
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill ms-2 d-none" id="deleteBtn" type="button" onclick="deleteRecording()">
+                  <i class="bi bi-trash"></i> Delete Recording
+                </button>
+                <span id="recording-status" class="text-muted ms-3"></span>
+              </div>
+              <audio id="voice-preview" controls class="mt-3 d-none w-100"></audio>
+              <input type="hidden" name="voiceRecording" id="voiceRecording">
+            </div>
+
+            <!-- Current Media -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-images"></i> Current Media
+              </label>
+              <div class="row g-3">
+                {% if story.media %}
+                  {% for m in story.media %}
+                    <div class="col-md-4">
+                      <div class="card h-100">
+                        <div class="card-body p-3">
+                          <!-- Display the media preview -->
+                          {% if m.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.avif', '.webp')) %}
+                            <img src="{{ url_for('static', filename=m) }}" class="img-fluid rounded mb-2" alt="Media preview" style="max-height: 200px; width: 100%; object-fit: cover;">
+                          {% elif m.lower().endswith(('.mp4', '.webm', '.ogg')) %}
+                            <video class="img-fluid rounded mb-2" controls style="max-height: 200px; width: 100%; object-fit: cover;">
+                              <source src="{{ url_for('static', filename=m) }}" type="video/{{ m.split('.')[-1] }}">
+                            </video>
+                          {% else %}
+                            <div class="bg-light text-center p-4 rounded mb-2">
+                              <i class="bi bi-file-earmark fs-1 text-muted"></i>
+                            </div>
+                          {% endif %}
+                          
+                          <!-- File path and remove button -->
+                          <small class="text-muted d-block mb-2"><i class="bi bi-file-earmark"></i> {{ m }}</small>
+                          <input type="hidden" name="existing_media" value="{{ m }}">
+                          <button class="btn btn-outline-danger btn-sm w-100 rounded-pill" type="button" onclick="removeMedia(this)">
+                            <i class="bi bi-trash"></i> Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="col-12">
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle"></i> No media uploaded yet.
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Add More Media -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-cloud-upload"></i> Add More Media
+              </label>
+              <input type="file" class="form-control form-control-lg" name="media" multiple accept="image/*,video/*">
+              <small class="form-text text-muted">Select multiple images or videos to add to your story</small>
+            </div>
+
+            <!-- Tags -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-tags"></i> Tags
+              </label>
+              <div class="d-flex flex-wrap gap-2">
+                {% for tag in tag_options %}
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="tags" value="{{ tag }}" id="tag_{{ loop.index }}" 
+                           {% if tag in story.tags %}checked{% endif %}>
+                    <label class="form-check-label" for="tag_{{ loop.index }}">{{ tag }}</label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Custom Tags -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-plus-circle"></i> Custom Tags
+              </label>
+              {% set predefined_tags = ["Travel", "Photography", "Tech", "Learning", "Food", "Lifestyle", "Art"] %}
+              {% set custom_only = [] %}
+              {% for tag in story.tags %}
+                {% if tag not in predefined_tags %}
+                  {% set _ = custom_only.append(tag) %}
+                {% endif %}
+              {% endfor %}
+              <input type="text" class="form-control form-control-lg" name="custom_tags" placeholder="e.g., adventure, memories, 2025" 
+                     value="{{ custom_only|join(', ') if custom_only else '' }}">
+              <small class="form-text text-muted">Separate multiple tags with commas</small>
+            </div>
+
+            <!-- Privacy -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-shield-lock"></i> Privacy
+              </label>
+              <select class="form-select form-select-lg" name="privacy">
+                <option {% if story.privacy == 'Public' %}selected{% endif %}>Public</option>
+                <option {% if story.privacy == 'Friends' %}selected{% endif %}>Friends</option>
+                <option {% if story.privacy == 'Private' %}selected{% endif %}>Private</option>
+              </select>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="col-12 d-flex gap-2 mt-4">
+              <button class="btn btn-primary btn-lg flex-grow-1 rounded-pill" type="submit">
+                <i class="bi bi-check-circle"></i> Save Changes
+              </button>
+              <a class="btn btn-outline-secondary btn-lg rounded-pill" href="{{ url_for('story_my_stories') }}">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            </div>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+
+{% endblock %}

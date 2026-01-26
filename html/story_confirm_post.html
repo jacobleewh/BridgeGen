@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="big-card">
+  <div class="big-card-header">
+    <h4>Confirm Your Story</h4>
+  </div>
+  <div class="big-card-body">
+    <h6>{{ story.title }}</h6>
+    <p>{{ story.description }}</p>
+    <div>Tags: {{ ", ".join(story.tags) }}</div>
+
+    {% if story.voice %}
+      <audio controls class="mt-3">
+        <source src="{{ story.voice }}" type="audio/webm">
+      </audio>
+    {% endif %}
+
+    {% if story.media and story.media|length > 0 %}
+      <div class="mt-3">
+        <h6>Media</h6>
+        <div class="row">
+          {% for m in story.media %}
+            <div class="col-md-6 mb-2">
+              {% if m.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif')) %}
+                <img src="{{ url_for('static', filename=m.replace('static/', '')) }}" alt="Story media" class="img-fluid rounded story-media-img">
+              {% elif m.lower().endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')) %}
+                <video controls class="story-media-video">
+                  <source src="{{ url_for('static', filename=m.replace('static/', '')) }}" type="video/mp4">
+                </video>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="mt-4 d-flex gap-2">
+      <form method="post" action="{{ url_for('story_finalize_post', story_id=story.id) }}">
+        <button class="btn btn-success" type="submit">Confirm & Post</button>
+      </form>
+      <a href="{{ url_for('story_edit', story_id=story.id) }}" class="btn btn-outline-danger">Cancel</a>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+{% endblock %}

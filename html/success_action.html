@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='success.css') }}">
+
+<div class="success-wrapper">
+    <div class="success-card">
+        <div class="check-circle">
+            <i class="fas fa-check"></i>
+        </div>
+
+        <h2 class="success-title">
+            {{ message if message else "Success!" }}
+        </h2>
+        
+        <p class="success-message">
+            {{ sub_message if sub_message else "Your changes have been saved successfully." }}
+        </p>
+
+        <a href="{{ redirect_url if redirect_url else url_for('home') }}" class="btn-action">
+            {{ btn_text if btn_text else "Continue" }}
+        </a>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/success.js') }}"></script>
+
+{% endblock %}

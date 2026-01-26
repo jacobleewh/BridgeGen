@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg">
+        <div class="card-header" style="background: var(--gradient); color: white;">
+          <h3 class="mb-0">
+            <i class="bi bi-plus-circle"></i> Create Story
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-heading"></i> Title
+              </label>
+              <input class="form-control form-control-lg" name="title" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-calendar"></i> Date
+              </label>
+              <input type="date" class="form-control form-control-lg" name="date">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-text"></i> Description
+              </label>
+              <textarea class="form-control" id="descriptionField" name="description" rows="4" required></textarea>
+
+              <!-- Voice recording controls -->
+              <div class="mt-3">
+                <button class="btn btn-outline-success rounded-pill" type="button" onclick="startRecording()">
+                  <i class="bi bi-mic-fill"></i> Start Recording
+                </button>
+                <button class="btn btn-outline-danger rounded-pill" type="button" onclick="stopRecording()">
+                  <i class="bi bi-stop-fill"></i> Stop Recording
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill d-none" id="deleteBtn" type="button" onclick="deleteRecording()">
+                  <i class="bi bi-trash"></i> Delete Recording
+                </button>
+                <span id="recording-status" class="text-muted ms-2"></span>
+
+                <audio id="voice-preview" controls class="mt-3 d-none w-100"></audio>
+                <input type="hidden" name="voiceRecording" id="voiceRecording">
+              </div>
+            </div>
+
+            <!-- Media upload -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-cloud-upload"></i> Upload Media (Optional)
+              </label>
+              <input type="file" class="form-control form-control-lg" name="media" multiple accept="image/*,video/*">
+              <small class="form-text text-muted">Add images or videos to enhance your story</small>
+            </div>
+
+            <!-- Tags -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-tags"></i> Tags
+              </label><br>
+              <small class="form-text text-muted d-block mb-2">Select at least one tag or add custom tags</small>
+              {% for tag in tag_options %}
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" name="tags" value="{{ tag }}" id="tag_{{ loop.index }}">
+                  <label class="form-check-label" for="tag_{{ loop.index }}">{{ tag }}</label>
+                </div>
+              {% endfor %}
+              <div id="tagsFeedback" class="text-danger small d-none">Please select at least one tag or add custom tags.</div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-plus-circle"></i> Custom Tags
+              </label>
+              <input type="text" class="form-control form-control-lg" name="custom_tags" placeholder="e.g., adventure, memories, 2025">
+              <small class="form-text text-muted">Separate multiple tags with commas</small>
+              <div class="invalid-feedback">Please add at least one tag or custom tag.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-shield-lock"></i> Privacy
+              </label>
+              <select class="form-select form-select-lg" name="privacy" required>
+                <option value="">Select privacy setting</option>
+                <option value="Public">Public</option>
+                <option value="Friends">Friends</option>
+                <option value="Private">Private</option>
+              </select>
+            </div>
+            
+            <div class="col-12 d-flex gap-2 mt-4">
+              <button class="btn btn-primary btn-lg flex-grow-1" type="submit" onclick="return validateForm()">
+                <i class="bi bi-check-circle"></i> Post Story
+              </button>
+              <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('story_browse') }}">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+{% endblock %}

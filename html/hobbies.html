@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Manage Hobbies{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #4A90E2; text-align: center; margin-bottom: 20px;">Select Your Hobbies</h2>
+    
+    <form action="{{ url_for('save_hobbies') }}" method="POST">
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; cursor: pointer;">
+                <input type="checkbox" name="hobbies" value="Coding" style="width: 20px; height: 20px;"> Coding 💻
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; cursor: pointer;">
+                <input type="checkbox" name="hobbies" value="Gardening" style="width: 20px; height: 20px;"> Gardening 🌿
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; cursor: pointer;">
+                <input type="checkbox" name="hobbies" value="Gaming" style="width: 20px; height: 20px;"> Gaming 🎮
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; cursor: pointer;">
+                <input type="checkbox" name="hobbies" value="Cooking" style="width: 20px; height: 20px;"> Cooking 🍳
+            </label>
+            
+             <label style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; cursor: pointer;">
+                <input type="checkbox" name="hobbies" value="Music" style="width: 20px; height: 20px;"> Music 🎵
+            </label>
+
+            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                <label style="font-weight: bold; color: #555;">Other / Custom Hobby:</label>
+                <input type="text" name="other_hobby" placeholder="Type your hobby here..." 
+                       style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            </div>
+
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+            <button type="submit" style="background-color: #a67c52; color: white; border: none; padding: 12px 40px; border-radius: 6px; font-size: 1.1rem; cursor: pointer;">Save Hobbies</button>
+            <a href="{{ url_for('profile') }}" style="margin-left: 20px; color: #777; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

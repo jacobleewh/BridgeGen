@@ -1,40 +1,237 @@
 {% extends "base.html" %}
 
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card text-center shadow">
-            <div class="card-header bg-transparent border-bottom-0 pt-4">
-                <i class="fas fa-user-circle fa-6x text-primary"></i>
+<link rel="stylesheet" href="{{ url_for('static', filename='colourcustomiser/colour.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+
+
+
+
+<div class="profile-container">
+
+
+    <div class="sidebar">
+        <div class="card">
+            <div class="profile-pic-container">
+                <img src="{{ user.profile_pic }}" class="profile-img">
             </div>
-            <div class="card-body">
-                <h2 class="card-title mb-0">{{ user.username }}</h2>
-                <p class="text-muted">{{ user.email }}</p>
-                
-                <hr class="my-4">
-                
-                <div class="row text-start">
-                    <div class="col-6">
-                        <strong>Member ID:</strong>
-                    </div>
-                    <div class="col-6 text-end">
-                        #{{ user.id }}
-                    </div>
-                    
-                    <div class="col-6 mt-2">
-                        <strong>Account Status:</strong>
-                    </div>
-                    <div class="col-6 text-end mt-2">
-                        <span class="badge bg-success">Active</span>
-                    </div>
+            <h3 style="margin: 10px 0;">{{ user.username }}</h3>
+            <p style="color: #777; font-size: 0.9rem; margin-bottom: 15px;">{{ user.email }}</p>
+            <div class="photo-actions">
+                <a href="{{ url_for('choose_profile_pic') }}" class="btn-upload"><i class="fas fa-camera"></i> Upload Photo</a>
+                <a href="{{ url_for('remove_profile_pic') }}" class="btn-remove">Remove Photo</a>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <p style="color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">YOUR FRIEND ID</p>
+            <div class="friend-id-number">#{{ user.id }}</div>
+        </div>
+
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p style="font-weight: 600; margin: 0;">Background Color</p>
+                <div id="currentColorPreview" style="width: 25px; height: 25px; border-radius: 50%; background: var(--body-bg); border: 1px solid #ddd;"></div>
+            </div>
+            <button type="button" class="btn-customize" onclick="openColorModal()" style="background: #3498db; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 15px; font-weight: bold; cursor: pointer;">
+                Customize Theme
+            </button>
+        </div>  
+
+
+        <div class="card" style="text-align: left;">
+            <p style="font-weight: 600; margin-bottom: 5px; font-size: 1.1rem;"><i class="fas fa-user-plus"></i> Add Friend by ID</p>
+            <form action="{{ url_for('add_friend_by_id') }}" method="POST" class="add-friend-form">
+                <input type="text" name="friend_id" placeholder="#" class="add-friend-input">
+                <button type="submit" class="btn-add-big">Add</button>
+            </form>
+        </div>
+
+
+        <div class="card delete-card">
+            <h4 style="color: #e74c3c; margin: 0 0 5px 0;"><i class="fas fa-trash-alt"></i> Delete Account</h4>
+            <p style="font-size: 0.75rem; color: #666; margin-bottom: 10px;">Once you delete your account, there is no going back.</p>
+            <a href="{{ url_for('delete_account') }}" class="btn-delete-red" id="deleteAccountBtn">Delete Account</a>
+        </div>
+    </div>
+
+
+    <div class="main-content">
+        <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-group">
+                <input type="text" class="form-control" value="{{ user.username }}" readonly>
+                <a href="{{ url_for('change_username') }}" class="btn-brown">Change</a>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="input-group">
+                <input type="email" class="form-control" value="{{ user.email }}" readonly>
+                <a href="{{ url_for('change_email') }}" class="btn-brown">Change Email</a>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-group">
+                <input type="password" class="form-control" value="********" readonly>
+                <a href="#" class="btn-brown">Change Password</a>
+            </div>
+        </div>
+
+
+        <form id="profile-form" action="{{ url_for('update_profile') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">Date Of Birth</label>
+                <div class="dob-row">
+                    {% set parts = user.dob.split('-') if user.dob else ['', '', ''] %}
+                    <input type="text" name="dob_d" class="dob-input" placeholder="DD" value="{{ parts[0] }}">
+                    <input type="text" name="dob_m" class="dob-input" placeholder="MM" value="{{ parts[1] }}">
+                    <input type="text" name="dob_y" class="dob-input" placeholder="YYYY" value="{{ parts[2] }}">
+                    <span class="btn-brown" style="padding: 10px; cursor: default;">Edit</span>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label class="form-label">My Hobbies (from Selection)</label>
+                <div class="hobby-box">
+                    {% if user.hobbies %}
+                        {{ user.hobbies|map(attribute='name')|join(', ') }}
+                    {% else %}
+                        No hobbies selected yet.
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('hobbies') }}" class="btn-brown" style="font-size: 0.8rem;">Edit Hobbies</a>
+            </div>
+
+
+            <div class="form-group">
+                <label class="form-label">Interests (Choose up to 3):</label>
+                <div id="interest-container">
+                    <span class="interest-tag {% if 'Family' in user_interest_names %}selected{% endif %}" data-value="Family">Family</span>
+                    <span class="interest-tag {% if 'History' in user_interest_names %}selected{% endif %}" data-value="History">History</span>
+                    <span class="interest-tag {% if 'Food' in user_interest_names %}selected{% endif %}" data-value="Food">Food</span>
+                    <span class="interest-tag {% if 'Work Life' in user_interest_names %}selected{% endif %}" data-value="Work Life">Work Life</span>
+                    <span class="interest-tag {% if 'Travel' in user_interest_names %}selected{% endif %}" data-value="Travel">Travel</span>
+                    <span class="interest-tag {% if 'Health' in user_interest_names %}selected{% endif %}" data-value="Health">Health</span>
+                </div>
+                <input type="hidden" name="selected_interests" id="selectedInterestsInput">
+            </div>
+            <div class="submit-area" style="text-align: center; margin-top: 40px;">
+                <button type="submit" class="btn-submit-large">Submit</button>
+            </div>
+        </form>
+             </div> </div> <div id="colorModal" class="modal-overlay" style="display: none;" onclick="closeColorModal()">
+             <div class="modal-content" onclick="event.stopPropagation()">
+             <span class="close-btn" onclick="closeColorModal()" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
+       
+            <div class="modal-tabs">
+              <button class="tab-btn active" onclick="switchTab('custom')">Website Colour</button>
+              <button class="tab-btn" onclick="switchTab('suggested')">Suggested Themes</button>
+            </div>
+
+
+        <div class="modal-body">
+            <div id="tab-custom">
+                <h3 class="color-title">Top Colour</h3>
+                <div style="font-size:0.9rem; color:#888; margin-bottom:10px;">Light Presets</div>
+                <div class="color-grid" id="navLightGrid">
+                    <div class="color-circle" style="background:#81D4FA;" onclick="setNav(this, '#81D4FA', 'dark')"></div>
+                    <div class="color-circle" style="background:#FFAB91;" onclick="setNav(this, '#FFAB91', 'dark')"></div>
+                    <div class="color-circle" style="background:#A5D6A7;" onclick="setNav(this, '#A5D6A7', 'dark')"></div>
+                    <div class="color-circle" style="background:#FFF59D;" onclick="setNav(this, '#FFF59D', 'dark')"></div>
+                    <div class="color-circle" style="background:#CE93D8;" onclick="setNav(this, '#CE93D8', 'dark')"></div>
+                </div>
+                <div style="font-size:0.9rem; color:#888; margin-bottom:10px;">Dark Presets</div>
+                <div class="color-grid" id="navDarkGrid">
+                    <div class="color-circle" style="background:#4A90E2;" onclick="setNav(this, '#4A90E2', 'light')"></div>
+                    <div class="color-circle" style="background:#c0392b;" onclick="setNav(this, '#c0392b', 'light')"></div>
+                    <div class="color-circle" style="background:#0C2C55;" onclick="setNav(this, '#0C2C55', 'light')"></div>
+                    <div class="color-circle" style="background:#1e4d2b;" onclick="setNav(this, '#1e4d2b', 'light')"></div>
+                    <div class="color-circle" style="background:#5D4037;" onclick="setNav(this, '#5D4037', 'light')"></div>
                 </div>
 
-                <div class="mt-4">
-                    <a href="/events" class="btn btn-outline-primary me-2">My Events</a>
-                    <a href="/logout" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+
+                <h3 class="color-title" style="margin-top:20px;">Main Page Colour</h3>
+                <div style="font-size:0.9rem; color:#888; margin-bottom:10px;">Light Presets</div>
+                <div class="color-grid" id="bgLightGrid">
+                    <div class="color-circle" style="background:#f4f4f4;" onclick="setBg(this, '#f4f4f4', 'dark')"></div>
+                    <div class="color-circle" style="background:#ffffff; border:1px solid #ccc;" onclick="setBg(this, '#ffffff', 'dark')"></div>
+                    <div class="color-circle" style="background:#fff8e1;" onclick="setBg(this, '#fff8e1', 'dark')"></div>
+                    <div class="color-circle" style="background:#e3f2fd;" onclick="setBg(this, '#e3f2fd', 'dark')"></div>
+                    <div class="color-circle" style="background:#e8f5e9;" onclick="setBg(this, '#e8f5e9', 'dark')"></div>
+                </div>
+                <div style="font-size:0.9rem; color:#888; margin-bottom:10px;">Dark Presets</div>
+                <div class="color-grid" id="bgDarkGrid">
+                    <div class="color-circle" style="background:#121212;" onclick="setBg(this, '#121212', 'light')"></div>
+                    <div class="color-circle" style="background:#263238;" onclick="setBg(this, '#263238', 'light')"></div>
+                    <div class="color-circle" style="background:#213C51;" onclick="setBg(this, '#213C51', 'light')"></div>
+                    <div class="color-circle" style="background:#3e2723;" onclick="setBg(this, '#3e2723', 'light')"></div>
+                    <div class="color-circle" style="background:#333333;" onclick="setBg(this, '#333333', 'light')"></div>
                 </div>
             </div>
+
+
+            <div id="tab-suggested" style="display:none;" class="presets-grid">
+                <div class="preset-card" onclick="applyPreset('#7f8c8d', '#ffffff', 'light', 'dark')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#7f8c8d;"></div><div class="half-btm" style="background:#ffffff;"></div></div>
+                    <span>Minimalist</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#91A8D0', '#F7CAC9', 'dark', 'dark')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#91A8D0;"></div><div class="half-btm" style="background:#F7CAC9;"></div></div>
+                    <span>Serenity</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#FFCCB6', '#FFF8E1', 'dark', 'dark')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#FFCCB6;"></div><div class="half-btm" style="background:#FFF8E1;"></div></div>
+                    <span>Apricot</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#66BB6A', '#E8F5E9', 'light', 'dark')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#66BB6A;"></div><div class="half-btm" style="background:#E8F5E9;"></div></div>
+                    <span>Mint</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#FFEB3B', '#000000', 'dark', 'light')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#FFEB3B;"></div><div class="half-btm" style="background:#000000;"></div></div>
+                    <span>Eclipse</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#0C2C55', '#213C51', 'light', 'light')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#0C2C55;"></div><div class="half-btm" style="background:#213C51;"></div></div>
+                    <span>Midnight</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#424242', '#121212', 'light', 'light')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#424242;"></div><div class="half-btm" style="background:#121212;"></div></div>
+                    <span>Stealth</span>
+                </div>
+                <div class="preset-card" onclick="applyPreset('#3E2723', '#1E1611', 'light', 'light')">
+                    <div class="preset-bubble"><div class="half-top" style="background:#3E2723;"></div><div class="half-btm" style="background:#1E1611;"></div></div>
+                    <span>Dark Roast</span>
+                </div>
+                </div>
+        </div>
+
+
+        <div class="modal-footer">
+            <button class="btn-reset" onclick="resetDefaults()">Reset</button>
+            <button class="btn-save" onclick="closeColorModal()">Save Theme</button>
         </div>
     </div>
 </div>
+
+
+<script src="{{ url_for('static', filename='colourcustomiser/thememanager.js') }}"></script>
+<script src="{{ url_for('static', filename='colourcustomiser/maincolour.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+
 {% endblock %}
+
+
+
+

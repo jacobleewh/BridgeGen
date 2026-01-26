@@ -3,78 +3,750 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BridgeGen</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>{% block title %}BridgeGen{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='colourcustomiser/colour.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    {% if request.endpoint and request.endpoint.startswith('story_') %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+    {% endif %}
+    
+    {% if request.endpoint and request.endpoint.startswith('event_') %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='event_style.css') }}">
+    {% endif %}
+    
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav-link { font-weight: 500; }
-        .card { border: none; border-radius: 12px; }
+        /* Dynamic user background color only */
+        body {
+            background-color: {{ user.background_color if user else '#f4f4f4' }} !important;
+        }
+        
+        /* Logo Color Customization */
+        .navbar .logo {
+            color: #ffffff; /* Change this to your desired color */
+            transition: color 0.3s ease;
+        }
+        
+        .navbar .logo:hover {
+            color: #e0e0e0; /* Hover color */
+        }
+        
+        /* ============================================================
+           CUSTOM TRANSLATOR - NO GOOGLE DROPDOWN ISSUES
+           ============================================================ */
+        
+        .icon-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Translator Button */
+        .translate-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .translate-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .translate-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* Popup Container */
+        .translate-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            width: 280px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 10000;
+        }
+
+        /* Keep popup open when hovering over button OR popup */
+        .icon-wrapper:hover .translate-popup,
+        .translate-popup:hover {
+            display: block;
+        }
+
+        /* Add invisible bridge between button and popup */
+        .icon-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: transparent;
+            display: none;
+        }
+
+        .icon-wrapper:hover::after {
+            display: block;
+        }
+
+        /* Arrow pointer */
+        .translate-popup::before {
+            content: '';
+            position: absolute;
+            top: -9px;
+            right: 25px;
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 9px solid #ffffff;
+            filter: drop-shadow(0 -2px 2px rgba(0, 0, 0, 0.05));
+        }
+
+        /* Popup Header */
+        .translate-popup-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .translate-popup-header i {
+            color: #4A90E2;
+            font-size: 18px;
+        }
+
+        .translate-popup-header span {
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        /* Custom Language List */
+        .language-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .language-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            color: #333;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .language-item:hover {
+            background: #f0f7ff;
+            color: #4A90E2;
+        }
+
+        .language-item.active {
+            background: #4A90E2;
+            color: white;
+            font-weight: 600;
+        }
+
+        .language-item i {
+            font-size: 12px;
+            opacity: 0;
+        }
+
+        .language-item.active i {
+            opacity: 1;
+        }
+
+        /* Hide Google Translate elements */
+        #google_translate_element,
+        .goog-te-banner-frame.skiptranslate,
+        .goog-te-gadget,
+        body > .skiptranslate {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            width: 0 !important;
+            position: absolute !important;
+            top: -9999px !important;
+        }
+
+        body {
+            top: 0 !important;
+            position: static !important;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .translate-popup {
+                right: -20px;
+                width: 240px;
+                max-height: 300px;
+            }
+            
+            .translate-popup::before {
+                right: 30px;
+            }
+            
+            .translate-btn span {
+                display: none;
+            }
+            
+            .translate-btn {
+                padding: 8px;
+            }
+        }
+
+        /* Scrollbar for language list */
+        .translate-popup::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .translate-popup::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .translate-popup::-webkit-scrollbar-thumb {
+            background: #4A90E2;
+            border-radius: 3px;
+        }
+
+        /* Font Size Notification Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
-<body>
+<body data-username="{{ user.username if user else '' }}" data-user-id="{{ user.id if user else '' }}">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-4 sticky-top">
-        <a class="navbar-brand fw-bold" href="/">
+    <nav class="navbar">
+        <a href="{{ url_for('home') }}" class="logo">
             <i class="fas fa-bridge"></i> BridgeGen
         </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="/events">Events</a></li>
-                <li class="nav-item"><a class="nav-link" href="/story">Story</a></li>
-                <li class="nav-item"><a class="nav-link" href="/chat">Chat</a></li>
-                <li class="nav-item"><a class="nav-link" href="/community">Community</a></li>
-            </ul>
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('event_browse') }}">Events</a>
+            <a href="{{ url_for('story_home') if user else url_for('auth') }}">Story</a>
+            <a href="{{ url_for('chat_messaging') if user else url_for('auth') }}">Chat</a>
+            <a href="{{ url_for('community') }}">Community</a>
+        </div>
 
-            <ul class="navbar-nav ms-auto align-items-center">
-                {% if session.get('user_id') %}
-                    <li class="nav-item mx-3">
-                        <a class="nav-link position-relative" href="/notifications" title="Notifications">
-                            <i class="fas fa-bell fa-lg"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" id="notif-badge" style="display: none;">
-                                <span class="visually-hidden">New alerts</span>
-                            </span>
-                        </a>
-                    </li>
+        <div class="nav-icons">
+            
+            <!-- Translator with Custom Language List -->
+            <div class="icon-wrapper">
+                <button class="translate-btn" title="Translate Page">
+                    <i class="fas fa-language"></i>
+                    <span>Translate</span>
+                </button>
+                
+                <div id="custom_translate_box" class="translate-popup">
+                    <div class="translate-popup-header">
+                        <i class="fas fa-language"></i>
+                        <span>Select Language</span>
+                    </div>
+                    <div class="language-list" id="language-list">
+                        <!-- Languages will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
 
-                    <li class="nav-item mx-2">
-                        <a class="nav-link" href="/profile" title="My Profile">
-                            <i class="fas fa-user-circle fa-2x"></i>
-                        </a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="btn btn-light text-primary fw-bold btn-sm" href="/auth">Login / Join</a>
-                    </li>
-                {% endif %}
-            </ul>
+            <!-- Hidden Google Translate Element -->
+            <div id="google_translate_element" style="display:none !important;"></div>
+
+            {% if user %}
+                <div class="icon-wrapper">
+                    <a href="{{ url_for('notifications') }}" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-bell icon-btn"></i>
+                    </a>
+                </div>
+
+                <!-- Profile Icon Wrapper with Hover Dropdown -->
+                <div class="profile-icon-wrapper">
+                    <i class="fas fa-user-circle icon-btn" style="font-size: 1.5rem; cursor: pointer;"></i>
+                    <div class="dropdown profile-menu">
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                            <strong>{{ user.username }}</strong>
+                        </div>
+                        <a href="{{ url_for('profile') }}" class="profile-item"><i class="fas fa-id-card"></i> My Profile</a>
+                        <a href="{{ url_for('hobbies') }}" class="profile-item"><i class="fas fa-heart"></i> My Hobbies</a>
+                        <a href="{{ url_for('logout') }}" class="profile-item text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+
+            {% else %}
+                <a href="{{ url_for('auth') }}" class="login-btn">Login / Join</a>
+            {% endif %}
+
         </div>
     </nav>
 
-    <div class="container mt-4 mb-5">
+    <!-- Quick Navigation Sections (keeping existing code) -->
+    {% if request.endpoint and request.endpoint.startswith('event_') %}
+    <div class="bg-light py-2 border-bottom">
+        <div class="container">
+            {% set ep = request.endpoint %}
+            <ul class="nav quick-nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['event_browse'] %}active{% endif %}" href="{{ url_for('event_browse') }}">
+                        <i class="bi bi-calendar-event"></i> Browse Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['event_my_events','event_reflection','event_creator_reflection'] %}active{% endif %}" href="{{ url_for('event_my_events') }}">
+                        <i class="bi bi-calendar-check"></i> My Events
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['event_create'] %}active{% endif %}" href="{{ url_for('event_create') }}">
+                        <i class="bi bi-plus-circle"></i> Create Event
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.endpoint and request.endpoint.startswith('story_') %}
+    <div class="bg-light py-2 border-bottom">
+        <div class="container">
+            {% set ep = request.endpoint %}
+            <ul class="nav quick-nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['story_home'] %}active{% endif %}" href="{{ url_for('story_home') }}">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['story_browse','story_details'] %}active{% endif %}" href="{{ url_for('story_browse') }}">
+                        <i class="bi bi-compass"></i> Browse
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['story_my_stories','story_my_story','story_edit','story_confirm_save','story_delete','story_confirm_delete'] %}active{% endif %}" href="{{ url_for('story_my_stories') }}">
+                        <i class="bi bi-journal-text"></i> My Stories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['story_create','story_confirm_post','story_finalize_post'] %}active{% endif %}" href="{{ url_for('story_create') }}">
+                        <i class="bi bi-plus-circle"></i> Create Story
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.endpoint and request.endpoint.startswith('community_') %}
+    <div class="bg-light py-2 border-bottom">
+        <div class="container">
+            {% set ep = request.endpoint %}
+            <ul class="nav quick-nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['community_home'] %}active{% endif %}" href="{{ url_for('community_home') }}">
+                        <i class="bi bi-house-heart"></i> All Communities
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if ep in ['community_create'] %}active{% endif %}" href="{{ url_for('community_create') }}">
+                        <i class="bi bi-plus-circle"></i> Create Community
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Accessibility Tools -->
+    <div class="accessibility-tools">
+        <button class="text-btn" onclick="adjustFontSize(-1)" title="Smaller Text">A-</button>
+        <button class="text-btn" onclick="adjustFontSize(1)" title="Larger Text">A+</button>
+    </div>
+
+    <div class="content-wrapper">
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
+                <div style="max-width: 800px; margin: 20px auto; padding: 0 20px;">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" 
+                             style="background: white; padding: 15px; margin-bottom: 10px; border-left: 5px solid #4A90E2; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 4px; color: #333;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
-        
+
         {% block content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% include 'footer.html' ignore missing %}
+
+    <!-- Chatbot -->
+    {% if user %}
+    <div id="chatbot-container">
+        <div id="chatbot-window">
+            <div class="chatbot-header">
+                <div>
+                    <strong><i class="bi bi-robot"></i> BridgeGen Assistant</strong>
+                </div>
+                <button onclick="toggleChatbot()" style="background: none; border: none; color: white; font-size: 20px;">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="chatbot-message bot">
+                    <div class="message-bubble">
+                        Hello! I'm your BridgeGen assistant. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            <div class="chatbot-input-container">
+                <input type="text" class="chatbot-input" id="chatbot-input" placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                <button class="chatbot-send" onclick="sendChatMessage()">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+        </div>
+        <button id="chatbot-button" onclick="toggleChatbot()">
+            <i class="bi bi-chat-dots"></i>
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Google Translate Script -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,zh-CN,zh-TW,ms,ta,hi,bn,te,ml,th,vi,id,ja,ko,fr,es,de,ar,ru,pt,it,nl,pl,tr',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    <!-- Custom Translator Script -->
+    <script>
+        // Language list with codes and names
+        const languages = [
+            { code: 'en', name: 'English' },
+            { code: 'zh-CN', name: '中文 (简体)' },
+            { code: 'zh-TW', name: '中文 (繁體)' },
+            { code: 'ms', name: 'Bahasa Melayu' },
+            { code: 'ta', name: 'தமிழ்' },
+            { code: 'hi', name: 'हिन्दी' },
+            { code: 'bn', name: 'বাংলা' },
+            { code: 'te', name: 'తెలుగు' },
+            { code: 'ml', name: 'മലയാളം' },
+            { code: 'th', name: 'ไทย' },
+            { code: 'vi', name: 'Tiếng Việt' },
+            { code: 'id', name: 'Bahasa Indonesia' },
+            { code: 'ja', name: '日本語' },
+            { code: 'ko', name: '한국어' },
+            { code: 'fr', name: 'Français' },
+            { code: 'es', name: 'Español' },
+            { code: 'de', name: 'Deutsch' },
+            { code: 'ar', name: 'العربية' },
+            { code: 'ru', name: 'Русский' },
+            { code: 'pt', name: 'Português' },
+            { code: 'it', name: 'Italiano' },
+            { code: 'nl', name: 'Nederlands' },
+            { code: 'pl', name: 'Polski' },
+            { code: 'tr', name: 'Türkçe' }
+        ];
+
+        // Get current language from cookie or URL
+        function getCurrentLanguage() {
+            const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
+            return match ? match[1] : 'en';
+        }
+
+        // Populate language list
+        function populateLanguages() {
+            const languageList = document.getElementById('language-list');
+            const currentLang = getCurrentLanguage();
+            
+            languageList.innerHTML = '';
+            
+            languages.forEach(lang => {
+                const item = document.createElement('div');
+                item.className = 'language-item' + (lang.code === currentLang ? ' active' : '');
+                item.innerHTML = `
+                    <i class="fas fa-check"></i>
+                    <span>${lang.name}</span>
+                `;
+                item.onclick = function() {
+                    changeLanguage(lang.code);
+                };
+                languageList.appendChild(item);
+            });
+        }
+
+        // Change language by manipulating Google Translate
+        function changeLanguage(langCode) {
+            // Set the Google Translate cookie
+            const domain = window.location.hostname;
+            document.cookie = `googtrans=/en/${langCode}; path=/; domain=${domain}`;
+            document.cookie = `googtrans=/en/${langCode}; path=/`;
+            
+            // Reload page to apply translation
+            window.location.reload();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            populateLanguages();
+        });
+    </script>
+    
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Story Script (conditional) -->
+    {% if request.endpoint and request.endpoint.startswith('story_') %}
+    <script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+    {% endif %}
+    
+    <script>
+        // ============================================================
+        // UTILITY FUNCTIONS
+        // ============================================================
+        
+        function openModal() { 
+            const modal = document.getElementById('themeModal');
+            if(modal) modal.style.display = 'flex';
+        }
+        
+        // ============================================================
+        // FONT SIZE ADJUSTMENT WITH LOCALSTORAGE
+        // ============================================================
+        
+        let currentFontSize = parseFloat(localStorage.getItem('fontSize')) || 1.0;
+        
+        // Apply saved font size on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.fontSize = currentFontSize + 'rem';
+        });
+        
+        function adjustFontSize(change) {
+            currentFontSize += change * 0.1;
+            
+            // Limit font size range (80% to 150%)
+            if (currentFontSize < 0.8) currentFontSize = 0.8;
+            if (currentFontSize > 1.5) currentFontSize = 1.5;
+            
+            // Apply font size to body
+            document.body.style.fontSize = currentFontSize + 'rem';
+            
+            // Save to localStorage
+            localStorage.setItem('fontSize', currentFontSize);
+            
+            // Show notification
+            showFontSizeNotification(currentFontSize);
+        }
+        
+        function showFontSizeNotification(size) {
+            // Remove existing notification if any
+            const existing = document.getElementById('font-size-notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.id = 'font-size-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: #4A90E2;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 10000;
+                font-size: 0.9rem;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            const percentage = Math.round(size * 100);
+            notification.textContent = `Font Size: ${percentage}%`;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+        
+        // ============================================================
+        // CHATBOT FUNCTIONS
+        // ============================================================
+        
+        function toggleChatbot() {
+            const window = document.getElementById('chatbot-window');
+            if (window) window.classList.toggle('active');
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+        
+        function sendChatMessage() {
+            const input = document.getElementById('chatbot-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const messagesDiv = document.getElementById('chatbot-messages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chatbot-message user';
+            userMsg.innerHTML = `<div class="message-bubble">${message}</div>`;
+            messagesDiv.appendChild(userMsg);
+            
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chatbot-message bot';
+                botMsg.innerHTML = `<div class="message-bubble">${data.response}</div>`;
+                messagesDiv.appendChild(botMsg);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chatbot-message bot';
+                botMsg.innerHTML = '<div class="message-bubble">Sorry, I encountered an error. Please try again.</div>';
+                messagesDiv.appendChild(botMsg);
+            });
+        }
+
+        // ============================================================
+        // DRAGGABLE FUNCTIONALITY
+        // ============================================================
+        
+        function makeDraggable(element) {
+            if (!element) return;
+            
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+                
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                let newTop = element.offsetTop - pos2;
+                let newLeft = element.offsetLeft - pos1;
+                
+                newTop = Math.max(70, Math.min(newTop, window.innerHeight - element.offsetHeight - 10));
+                newLeft = Math.max(10, Math.min(newLeft, window.innerWidth - element.offsetWidth - 10));
+                
+                element.style.top = newTop + "px";
+                element.style.left = newLeft + "px";
+                element.style.right = "auto";
+                element.style.bottom = "auto";
+            }
+            
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+        
+        // Make accessibility tools and chatbot draggable
+        document.addEventListener('DOMContentLoaded', function() {
+            const accessibilityTools = document.querySelector('.accessibility-tools');
+            if (accessibilityTools) {
+                accessibilityTools.style.cursor = 'move';
+                accessibilityTools.style.userSelect = 'none';
+                makeDraggable(accessibilityTools);
+            }
+            
+            const chatbotButton = document.getElementById('chatbot-button');
+            if (chatbotButton) {
+                chatbotButton.style.cursor = 'move';
+                chatbotButton.style.userSelect = 'none';
+                makeDraggable(chatbotButton);
+            }
+        });
+    </script>
+
+    <!-- Theme Manager Scripts -->
+    <script src="{{ url_for('static', filename='colourcustomiser/thememanager.js') }}"></script>
+    <script src="{{ url_for('static', filename='colourcustomiser/maincolour.js') }}"></script>
+
 </body>
 </html>

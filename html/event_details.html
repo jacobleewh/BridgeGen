@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="big-card mb-4">
+  <div class="big-card-header">
+    <h5>Event Details</h5>
+  </div>
+  <div class="big-card-body">
+    <div class="card">
+      <div class="row g-0">
+        <div class="col-md-4">
+          <img src="{{ url_for('static', filename='uploads/' + (event.image if event.image else 'default.png')) }}" 
+               alt="Event image" class="img-fluid rounded" style="height: 100%; object-fit: cover;">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title">{{ event.title }}</h5>
+            <p class="card-text">{{ event.description }}</p>
+            
+            <div class="mb-3">
+              <div class="mb-2"><strong><i class="bi bi-calendar-event"></i> Date & Time:</strong> {{ event.date.strftime('%d %b %Y') }}, {{ event.time.strftime('%I:%M %p') }}</div>
+              <div class="mb-2"><strong><i class="bi bi-geo-alt"></i> Location:</strong> {{ event.location }}</div>
+              <div class="mb-2"><strong><i class="bi bi-tag"></i> Category:</strong> {{ event.category }}</div>
+              <div class="mb-2"><strong><i class="bi bi-people"></i> Slots Available:</strong> {{ event.slots }}</div>
+              <div class="mb-2"><strong><i class="bi bi-person-circle"></i> Host / Creator:</strong> {{ event.host }}</div>
+            </div>
+            
+            <div class="d-flex gap-2 flex-wrap">
+              {% if is_creator %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('event_edit', event_id=event.id) }}">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                <form method="post" action="{{ url_for('event_delete', event_id=event.id) }}" style="display:inline;" onsubmit="return confirm('Delete this event?');">
+                  <button class="btn btn-sm btn-danger" type="submit">
+                    <i class="bi bi-trash"></i> Delete
+                  </button>
+                </form>
+              {% elif joined %}
+                <form method="post" action="{{ url_for('event_leave', event_id=event.id) }}" style="display:inline;">
+                  <button class="btn btn-sm btn-danger" type="submit">
+                    <i class="bi bi-box-arrow-right"></i> Leave
+                  </button>
+                </form>
+              {% else %}
+                <form method="post" action="{{ url_for('event_join', event_id=event.id) }}" style="display:inline;">
+                  <button class="btn btn-sm btn-primary" type="submit">
+                    <i class="bi bi-plus-circle"></i> Join Event
+                  </button>
+                </form>
+              {% endif %}
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('event_browse') }}">
+                <i class="bi bi-arrow-left"></i> Go Back
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/story_style.css') }}">
+{% endblock %}

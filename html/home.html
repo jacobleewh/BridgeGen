@@ -1,39 +1,71 @@
 {% extends "base.html" %}
 
+{% block title %}Home - BridgeGen{% endblock %}
+
 {% block content %}
-<div class="row align-items-center py-5">
-    <div class="col-md-6">
-        <h1 class="display-4 fw-bold text-primary">Connecting Generations</h1>
-        <p class="lead text-secondary my-3">
-            BridgeGen is a safe space for youths and seniors to share stories, attend events, and learn from one another.
-        </p>
-        <div class="d-grid gap-2 d-md-block mt-4">
-            <a href="/auth" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
-            <a href="/story" class="btn btn-outline-secondary btn-lg px-4">Read Stories</a>
+
+<section class="hero-section">
+    <div class="hero-container">
+        <div class="hero-text">
+            <h1>Connecting<br>Generations</h1>
+            <p>BridgeGen is a safe space for youths and seniors to share stories, attend events, and learn from one another.</p>
+            
+            <div class="hero-buttons">
+                <a href="{{ url_for('auth') }}" class="btn btn-primary">Get Started</a>
+                <a href="{{ url_for('story') }}" class="btn btn-outline">Read Stories</a>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <i class="fas fa-hands-helping hero-icon"></i>
         </div>
     </div>
-    <div class="col-md-6 text-center">
-        <i class="fas fa-hands-holding-circle fa-10x text-info opacity-50"></i>
+</section>
+
+<div class="features-section">
+    <div class="features-container">
+        
+        <div class="feature-box">
+            <i class="fas fa-circle-notch feature-icon"></i>
+            <h3>Find local events</h3>
+            <p>Discover virtual and in-person activities tailored for youth and seniors.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-book-open feature-icon"></i>
+            <h3>Share your stories</h3>
+            <p>Read inspiring life stories, wisdom, and memories shared by people of all ages.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-plus-circle feature-icon"></i>
+            <h3>Connect with friends</h3>
+            <p>Join a community and connect with a youth or senior.</p>
+        </div>
+
+        <div class="feature-box">
+            <i class="fas fa-users feature-icon"></i>
+            <h3>Communities</h3>
+            <p>Find groups based on hobbies like gardening, tech, books, or history.</p>
+        </div>
+
     </div>
 </div>
 
-<hr class="my-5">
-
-<div class="row text-center">
-    <div class="col-md-4">
-        <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
-        <h3>Events</h3>
-        <p>Join local meetups and workshops.</p>
-    </div>
-    <div class="col-md-4">
-        <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
-        <h3>Stories</h3>
-        <p>Read wisdom from the past.</p>
-    </div>
-    <div class="col-md-4">
-        <i class="fas fa-comments fa-3x text-primary mb-3"></i>
-        <h3>Chat</h3>
-        <p>Real-time community discussions.</p>
+<div class="testimonial-section">
+    <div class="testimonial-container">
+        <div class="testimonial-img">
+            <img src="https://randomuser.me/api/portraits/men/11.jpg" alt="Dylan Shaw">
+        </div>
+        
+        <div class="testimonial-text">
+            <i class="fas fa-quote-left quote-icon"></i>
+            <p class="quote-text">
+                "After using this Website I have learned new slangs from this generation."
+            </p>
+            <p class="quote-author">Dylan Shaw</p>
+        </div>
     </div>
 </div>
+
 {% endblock %}

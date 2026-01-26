@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Browse Stories Functionality -->
+<div class="big-card mb-4">
+  <div class="big-card-header">
+    <h5>Stories</h5>
+  </div>
+  <div class="big-card-body">
+
+    <!-- Search and Filter -->
+    <form method="get" class="row g-2 mb-4">
+      <div class="col-md-6">
+        <input type="text" class="form-control" name="q" placeholder="Search..." value="{{ q }}">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" name="tag">
+          <option value="">All tags</option>
+          {% for t in tags %}
+            <option value="{{ t }}" {% if selected_tag==t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-secondary w-100" type="submit">Filter</button>
+      </div>
+    </form>
+
+    <!-- Stories Feed -->
+    {% if stories %}
+      <div class="row">
+        {% for s in stories %}
+          <div class="col-md-6 mb-3">
+            {% if s.author == current_user.username %}
+              <!-- My Story Card -->
+              <div class="story-card my-story">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="mb-0">{{ s.title }}</h6>
+                  <span class="badge bg-primary">Your Story</span>
+                </div>
+                {% if s.media and s.media|length > 0 %}
+                  <img src="{{ url_for('static', filename=s.media[0].replace('static/', '')) }}" alt="Story media" class="img-fluid rounded mb-2">
+                {% endif %}
+                <p>{{ s.description }}</p>
+                <div class="tags">Tags: {{ ", ".join(s.tags) }}</div>
+                <div class="meta">Posted: {{ s.date }} • Likes: {{ s.likes }} • Comments: {{ s.comments|length }}</div>
+
+                {% if s.voice %}
+                  <audio controls class="mt-2 w-100">
+                    <source src="{{ s.voice }}" type="audio/webm">
+                  </audio>
+                {% endif %}
+
+                <div class="d-flex justify-content-end gap-2 mt-2">
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('story_my_story', story_id=s.id) }}">View</a>
+                </div>
+              </div>
+            {% else %}
+
+              <!-- Other User's Story Card -->
+              <div class="story-card other-story">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h6 class="mb-0">{{ s.title }}</h6>
+                    <small class="text-muted">by {{ s.author }}</small>
+                  </div>
+                  <span class="badge bg-success">Others' Story</span>
+                </div>
+                {% if s.media and s.media|length > 0 %}
+                  <img src="{{ url_for('static', filename=s.media[0].replace('static/', '')) }}" alt="Story media" class="img-fluid rounded mb-2">
+                {% endif %}
+                <p>{{ s.description }}</p>
+                <div class="tags">Tags: {{ ", ".join(s.tags) }}</div>
+                <div class="meta">Posted: {{ s.date }} • Likes: {{ s.likes }} • Comments: {{ s.comments|length }}</div>
+
+                {% if s.voice %}
+                  <audio controls class="mt-2 w-100">
+                    <source src="{{ s.voice }}" type="audio/webm">
+                  </audio>
+                {% endif %}
+
+                <div class="d-flex justify-content-end gap-2 mt-2">
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('story_details', story_id=s.id) }}">View</a>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No stories match your filters.</p>
+    {% endif %}
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+{% endblock %}

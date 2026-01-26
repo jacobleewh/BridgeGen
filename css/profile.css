@@ -1,0 +1,183 @@
+/* --- PAGE BACKGROUND --- */
+body {
+    background-color: #2c3e50; /* Dark Blue */
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- NAVBAR DROPDOWN HOVER --- */
+.navbar .profile-icon-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.navbar .dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    padding: 10px 0;
+    margin-top: 10px;
+    z-index: 1000;
+}
+
+/* Show dropdown on hover */
+.navbar .profile-icon-wrapper:hover .dropdown {
+    display: block;
+}
+
+.navbar .dropdown .profile-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.navbar .dropdown .profile-item:hover {
+    background-color: #f5f5f5;
+}
+
+.navbar .dropdown .profile-item i {
+    font-size: 16px;
+}
+
+/* Optional: Add a small arrow pointing up */
+.navbar .dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+/* --- FIXED SIDEBAR LAYOUT --- */
+/* --- FIXED SIDEBAR & MAIN ROW --- */
+.profile-container {
+    display: flex !important;
+    flex-direction: row !important; /* Forces Sidebar and Form side-by-side */
+    gap: 40px;
+    max-width: 1200px;
+    margin: 40px auto;
+    align-items: flex-start;
+}
+
+.sidebar {
+    flex: 0 0 450px !important;    /* FIXED WIDTH: Stops the squashing */
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.card {
+    width: 100% !important;        /* Fills the 350px sidebar */
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    box-sizing: border-box;        /* Keeps padding inside the card */
+}
+
+/* Ensure the "Customize Theme" text is visible on the button */
+.btn-upload {
+    color: white !important;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.navbar .dropdown .profile-item i {
+    color: var(--navbar-color) !important; /* Icons in your dropdown now follow the theme */
+}
+
+/* --- CARD STYLING --- */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px; /* More breathing room inside cards */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    width: 100px;
+    text-align: center;
+    flex-shrink: 0; /* Prevents cards from getting squashed */
+    box-sizing: border-box;
+
+}
+
+/* --- DELETE CARD (PINNED TO BOTTOM) --- */
+.delete-card {
+    border: 1px solid #ffcccc;
+    /* CRITICAL: This pushes the delete card to the VERY bottom line */
+    margin-top: auto; 
+}
+
+/* --- RIGHT MAIN CONTENT --- */
+.main-content {
+    flex: 2;
+    background: white;
+    border-radius: 10px;
+    padding: 50px; /* More padding for a premium look */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- FORM STYLING --- */
+.form-group { margin-bottom: 30px; }
+.form-label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; }
+
+/* CENTERED BUTTONS FIX */
+.input-group { 
+    display: flex; 
+    flex-direction: column; /* Stack Input & Button */
+    align-items: center;    /* Center Button */
+    gap: 15px; 
+}
+
+.form-control { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+    background-color: #f9f9f9; 
+    box-sizing: border-box;
+}
+
+/* --- BUTTONS --- */
+.btn-brown { background: #a0805b; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 0.9rem; }
+.btn-brown:hover { background: #8a6d4b; }
+
+.btn-upload { background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; text-decoration: none; }
+.btn-remove { border: 1px solid #3498db; color: #3498db; background: white; padding: 8px 12px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; text-decoration: none;}
+.btn-delete-red { background: #e74c3c; color: white; width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: block; font-weight: bold;}
+
+/* --- AVATAR --- */
+.profile-pic-container { display: flex; justify-content: center; margin-bottom: 15px; }
+.profile-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; background-color: #ddd; border: 4px solid #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.photo-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+.friend-id-number { font-size: 2.5rem; color: #3498db; font-weight: bold; margin: 10px 0; }
+
+/* --- DOB & HOBBIES --- */
+.dob-row { display: flex; gap: 10px; }
+.dob-input { width: 80px; text-align: center; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+.hobby-box { padding: 15px; background: #f8f9fa; border: 1px solid #eee; border-radius: 5px; margin-bottom: 10px; color: #666; font-style: italic; }
+
+/* --- INTEREST TAGS --- */
+.interest-tag { display: inline-block; border: 1px solid #ddd; padding: 8px 20px; border-radius: 20px; margin-right: 5px; margin-bottom: 5px; font-size: 0.9rem; color: #555; background: white; cursor: pointer; transition: all 0.2s; }
+.interest-tag.selected { background-color: #a0805b; color: white; border-color: #a0805b; }
+
+.submit-area { text-align: center; margin-top: 40px; }
+.btn-submit-large { background: #a0805b; color: white; padding: 12px 60px; font-size: 1.1rem; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }

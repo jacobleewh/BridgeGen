@@ -1,0 +1,110 @@
+/* BridgeGen/css/choose_profile_pic.css */
+
+body { 
+    background-color: #f4f6f8; 
+    font-family: 'Segoe UI', sans-serif; 
+}
+
+.upload-container {
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+/* Current Avatar */
+.current-avatar-fixed {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    object-fit: cover;
+    background: #ddd;
+}
+
+/* White Card */
+.upload-card-fixed {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin: 0 auto 40px auto;
+    max-width: 500px;
+    text-align: center;
+}
+
+.upload-title-fixed {
+    color: #444;
+    font-weight: 600;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+/* === BUTTON ROW CONTAINER === */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between buttons */
+    align-items: center;
+}
+
+/* 1. HIDE THE UGLY FILE INPUT */
+#fileInput {
+    display: none; /* Make it invisible */
+}
+
+/* 2. STYLE THE LABEL AS THE BLUE BUTTON */
+.btn-upload-custom {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: inline-block;
+    transition: background 0.2s;
+    border: 1px solid #3498db;
+}
+
+.btn-upload-custom:hover {
+    background-color: #2980b9;
+}
+
+/* 3. STYLE THE CANCEL BUTTON (White) */
+.btn-cancel-custom {
+    background-color: white;
+    color: #3498db;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-block;
+    border: 1px solid #3498db; /* Blue border */
+    transition: background 0.2s;
+}
+
+.btn-cancel-custom:hover {
+    background-color: #f0f8ff;
+}
+
+/* Suggested Avatars */
+.avatar-grid {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.avatar-btn {
+    background: none; border: none; cursor: pointer; padding: 0;
+    transition: transform 0.2s;
+}
+.avatar-btn:hover { transform: scale(1.1); }
+.avatar-img {
+    width: 60px; height: 60px; border-radius: 50%;
+    border: 2px solid transparent;
+}
+.avatar-btn:hover .avatar-img { border-color: #3498db; }

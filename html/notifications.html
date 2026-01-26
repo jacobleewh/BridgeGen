@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow-lg">
+        <div class="card-header" style="background: var(--gradient); color: white;">
+          <h3 class="mb-0">
+            <i class="bi bi-bell"></i> Notifications
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          {% if notifications %}
+            <div class="list-group">
+              {% for notif in notifications %}
+                <div class="list-group-item">
+                  <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ notif.message }}</h6>
+                    <small class="text-muted">{{ notif.timestamp.strftime('%b %d, %Y at %I:%M %p') }}</small>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> No notifications yet.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="mb-3">
+  <a href="javascript:history.back()" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+</div>
+
+<!-- Story Details Container -->
+<div class="big-card">
+  <div class="big-card-header">
+    <h4>{{ story.title }}</h4>
+    <div class="text-muted small">
+      <span class="badge bg-primary">Your Story</span> • Posted: {{ story.date }} • Tags: {{ ", ".join(story.tags) }}
+    </div>
+  </div>
+
+  <div class="big-card-body">
+    <!-- Text Section -->
+    <h6>Written Story</h6>
+    <p class="mb-4">{{ story.description }}</p>
+
+    <!-- Media Section -->
+    {% if story.media and story.media|length > 0 %}
+      <h6>Media</h6>
+      <div class="row mb-4">
+        {% for m in story.media %}
+          <div class="col-md-6 mb-3">
+            {% if m.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif')) %}
+              <img src="{{ url_for('static', filename=m.replace('static/', '')) }}" alt="Story media" class="story-media-img">
+            {% elif m.lower().endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')) %}
+              <video controls class="story-media-video">
+                <source src="{{ url_for('static', filename=m.replace('static/', '')) }}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Audio Section below text -->
+    {% if story.voice %}
+      <h6>Listen to Story</h6>
+      <audio controls>
+        <source src="{{ story.voice }}" type="audio/webm">
+        Your browser does not support the audio element.
+      </audio>
+    {% endif %}
+
+    <!-- Story Stats -->
+    <div class="alert alert-info" role="alert">
+      <strong>Story Stats:</strong> Likes: {{ story.likes }} • Comments: {{ story.comments|length }} • Privacy: {{ story.privacy }}
+    </div>
+
+    <!-- Interaction Buttons -->
+    <div class="d-flex gap-2 mb-4 flex-wrap">
+      <!-- Edit and Delete buttons for own stories -->
+      <a class="btn btn-outline-secondary" href="{{ url_for('story_edit', story_id=story.id) }}">
+        <i class="bi bi-pencil"></i> Edit
+      </a>
+      <a class="btn btn-outline-danger" href="{{ url_for('story_delete', story_id=story.id) }}">
+        <i class="bi bi-trash"></i> Delete
+      </a>
+    </div>
+
+    <!-- Comments Section -->
+    <hr>
+    <h5>Comments ({{ story.comments|length }})</h5>
+    {% if story.comments %}
+      <ul class="list-unstyled">
+        {% for c in story.comments %}
+          <li class="mb-3">
+            <div><strong>{{ c.author }}</strong> <span class="text-muted small">said:</span></div>
+            <div>{{ c.text }}</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No comments yet. Share your story with others to get comments!</p>
+    {% endif %}
+
+    <!-- Add Comment -->
+    <form method="post" class="row g-2 mt-3">
+      <input type="hidden" name="action" value="comment">
+      <div class="col-md-3">
+        <input class="form-control" name="author" placeholder="Your name" value="{{ current_user.username if current_user.is_authenticated else '' }}">
+      </div>
+      <div class="col-md-7">
+        <input class="form-control" name="text" placeholder="Write a comment...">
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+{% endblock %}

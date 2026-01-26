@@ -1,0 +1,267 @@
+/* GLOBAL VARIABLES (Defaults) */
+:root {
+    --navbar-color: #4A90E2;       /* Default Blue */
+    --navbar-text: #ffffff;        /* Default White Text */
+    --body-bg: #f4f4f4;            /* Default Grey BG */
+    --text-color: #333333;         /* Default Dark Text */
+}
+
+/* Force the Background to work */
+body {
+    background-color: var(--body-bg) !important;
+    min-height: 100vh;
+    transition: background-color 0.3s ease;
+}
+
+/* --- MODAL DESIGN RECOVERY --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none; justify-content: center; align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%; max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* --- FIXING THE PRESET CIRCLES (Pic 2) --- */
+.color-circle {
+    width: 35px !important;
+    height: 35px !important;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 8px;
+    border: 2px solid rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.color-circle:hover { transform: scale(1.1); }
+
+#tab-suggested.presets-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Adds space between each theme row */
+    margin-top: 15px;
+}
+
+.preset-card {
+    display: flex;
+    align-items: center; /* Centralizes the text vertically with the circle */
+    padding: 12px 15px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preset-card:hover {
+    background-color: #f8f9fa;
+    border-color: var(--navbar-color);
+    transform: translateX(5px); /* Subtle slide effect on hover */
+}
+
+/* --- LOGO-STYLE BUBBLES --- */
+.preset-bubble {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    margin-right: 15px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+
+.preset-card span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.half-top, .half-btm { flex: 1; width: 100%; }
+
+/* --- SYNC FOOTER & BUTTONS --- */
+.footer, footer, .navbar, .btn-submit-large, .interest-tag.selected {
+    background-color: var(--navbar-color) !important;
+    color: var(--navbar-text) !important;
+}
+
+.modal-tabs {
+    display: flex;
+    justify-content: flex-start; /* Aligns tabs to the left as seen in image */
+    gap: 20px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    padding: 12px 5px;
+    border: none;
+    background: none;
+    font-weight: 600;
+    color: #888;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Spacing for the icons */
+}
+
+/* The active underline indicator from the second image */
+.tab-btn.active {
+    color: var(--navbar-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--navbar-color);
+    border-radius: 3px 3px 0 0;
+}
+
+/* --- FOOTER BUTTONS (Circled Bottom Part) --- */
+.modal-footer {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.btn-reset {
+    background: #f1f1f1;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
+
+.btn-reset:hover {
+    background: #e5e5e5;
+}
+
+.btn-save {
+    background-color: var(--navbar-color) !important;
+    color: white !important;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: opacity 0.2s;
+}
+
+.btn-save:hover {
+    opacity: 0.9;
+}
+
+/* --- Modal Header Reset (Matching Pic 2) --- */
+.modal-tabs {
+    display: flex;
+    background-color: #f2f2f2; /* Light grey bar for the entire header */
+    border-radius: 15px 15px 0 0; /* Rounded top corners for the modal */
+    position: relative;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tab-btn {
+    flex: 1; /* Splits the header into two equal halves */
+    padding: 16px 0;
+    border: none;
+    background: transparent;
+    font-weight: 700; /* Bold text as seen in the screenshot */
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* Adds space for the icons (sliders/magic wand) */
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+/* The Green Active State from the Target Design */
+.tab-btn.active {
+    background: #ffffff; /* Active tab turns white */
+    color: #66BB6A; /* Mint Green theme color */
+    border-bottom: 4px solid #66BB6A; /* Bold green underline */
+}
+
+.tab-btn i {
+    font-size: 1.1rem;
+}
+
+.tab-btn:hover:not(.active) {
+    background-color: #e8e8e8; /* Slight darken on hover for the grey side */
+}
+
+/* Aligns the 'x' close button to the far right of the bar */
+.close-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 22px;
+    color: #aaa;
+    cursor: pointer;
+    z-index: 10;
+}
+
+/* SYNC EVERYTHING: Matches all buttons and selected interests to the theme */
+.btn-brown, 
+.btn-submit-large, 
+.interest-tag.selected, 
+.btn-add-big,
+.btn-upload,
+.btn-save,
+.btn-customize {
+    background-color: var(--navbar-color) !important;
+    color: var(--navbar-text) !important;
+    border-color: var(--navbar-color) !important;
+    transition: all 0.3s ease;
+}
+
+/* Keeps the button looking like a button on hover */
+.btn-brown:hover, 
+.btn-submit-large:hover, 
+.btn-add-big:hover, 
+.btn-upload:hover {
+    filter: brightness(90%);
+    cursor: pointer;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Space for the "cute" logo/icon */
+    font-weight: 700;
+    color: #888;
+}
+
+.tab-btn.active {
+    background: #ffffff;
+    color: var(--navbar-color); /* Matches the mint or theme color */
+    border-bottom: 4px solid var(--navbar-color);
+}

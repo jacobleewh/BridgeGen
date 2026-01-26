@@ -1,40 +1,1061 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-comments"></i> Community Chat</h5>
-                <span class="badge bg-light text-dark">Live</span>
-            </div>
-            
-            <div class="card-body bg-light" style="height: 400px; overflow-y: scroll; display: flex; flex-direction: column-reverse;">
-                {% for msg in messages %}
-                <div class="mb-2 p-2 bg-white rounded border">
-                    <div class="d-flex justify-content-between">
-                        <strong>{{ msg.username }}</strong>
-                        <small class="text-muted">{{ msg.timestamp.strftime('%H:%M') }}</small>
-                    </div>
-                    <p class="mb-0">{{ msg.message }}</p>
+
+<style>
+/* Fullscreen chat styling */
+.chat-fullscreen {
+    position: fixed;
+    top: 70px; /* Below navbar */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: white;
+    overflow: hidden;
+}
+
+.chat-fullscreen .chat-container {
+    height: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Hide content wrapper padding for chat */
+body.chat-page .content-wrapper {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Keep accessibility tools visible on chat page */
+body.chat-page .accessibility-tools {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    cursor: move;
+    user-select: none;
+}
+
+/* Hide chatbot on chat page */
+body.chat-page #chatbot-button,
+body.chat-page .chatbot-widget,
+body.chat-page .chatbot-container {
+    display: none !important;
+}
+
+/* Adjust chat sidebar for fullscreen */
+.chat-fullscreen .chat-sidebar {
+    border-right: 1px solid #e0e0e0;
+}
+
+/* Adjust chat messages height for fullscreen */
+.chat-fullscreen .chat-messages {
+    height: calc(100vh - 210px);
+}
+
+/* ============================================================
+   MESSAGE CONTEXT MENU STYLES
+   ============================================================ */
+.message-options {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.message-wrapper:hover .message-options {
+    opacity: 1;
+}
+
+.message-options-btn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.message-options-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.message-context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 150px;
+    z-index: 1000;
+    display: none;
+    right: 0;
+    top: 30px;
+}
+
+.message-context-menu.active {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.context-menu-item:hover {
+    background: #f5f5f5;
+}
+
+.context-menu-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.context-menu-item.delete {
+    color: #e74c3c;
+}
+
+.context-menu-item.delete:hover {
+    background: #fee;
+}
+
+/* Message editing styles */
+.message-editing {
+    background: #f0f7ff !important;
+    border: 1px solid #4A90E2;
+}
+
+.message-edit-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #4A90E2;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: none;
+}
+
+.message-edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-end;
+}
+
+.btn-edit-save,
+.btn-edit-cancel {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit-save {
+    background: #4A90E2;
+    color: white;
+}
+
+.btn-edit-save:hover {
+    background: #357ABD;
+}
+
+.btn-edit-cancel {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.btn-edit-cancel:hover {
+    background: #e0e0e0;
+}
+
+.message-edited {
+    font-size: 0.7rem;
+    color: #999;
+    font-style: italic;
+    margin-left: 5px;
+}
+
+/* ============================================================
+   HEADER MENU STYLES (for remove friend)
+   ============================================================ */
+.header-menu {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px 0;
+    min-width: 180px;
+    z-index: 1000;
+    display: none;
+}
+
+.header-menu.active {
+    display: block;
+}
+
+.header-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.header-menu-item:hover {
+    background: #f5f5f5;
+}
+
+.header-menu-item.danger {
+    color: #e74c3c;
+}
+
+.header-menu-item.danger:hover {
+    background: #fee;
+}
+
+/* ============================================================
+   CONFIRMATION MODAL STYLES
+   ============================================================ */
+.confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.confirmation-modal.active {
+    display: flex;
+}
+
+.confirmation-content {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.confirmation-message {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-confirm,
+.btn-cancel-modal {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-confirm {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #c0392b;
+}
+
+.btn-cancel-modal {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.btn-cancel-modal:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================================
+   EMOJI PICKER STYLES
+   ============================================================ */
+.emoji-picker {
+    position: absolute;
+    bottom: 70px;
+    right: 80px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    width: 320px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.emoji-picker.active {
+    display: block;
+}
+
+.emoji-picker-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.emoji-category-btn {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+    border-radius: 5px;
+}
+
+.emoji-category-btn:hover,
+.emoji-category-btn.active {
+    background: #f0f7ff;
+}
+
+.emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+}
+
+.emoji-item {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.emoji-item:hover {
+    background: #f0f7ff;
+    transform: scale(1.2);
+}
+
+/* ============================================================
+   FILE ATTACHMENT STYLES
+   ============================================================ */
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 10px 15px;
+    position: relative;
+}
+
+.file-preview-icon {
+    font-size: 2rem;
+    color: #4A90E2;
+}
+
+.file-preview-info {
+    flex: 1;
+}
+
+.file-preview-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.file-preview-size {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.file-preview-remove {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.file-preview-remove:hover {
+    color: #e74c3c;
+}
+
+/* File input hidden */
+#fileInput {
+    display: none;
+}
+
+/* Message attachment display */
+.message-attachment {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.message-wrapper.sent .message-attachment {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message-wrapper.received .message-attachment {
+    background: #f0f7ff;
+}
+
+.message-attachment-icon {
+    font-size: 1.5rem;
+}
+
+.message-attachment-info {
+    flex: 1;
+}
+
+.message-attachment-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.message-attachment-size {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.message-attachment-download {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.message-attachment-download:hover {
+    opacity: 1;
+}
+
+/* Image preview in messages */
+.message-image {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 8px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+/* Emoji picker scrollbar */
+.emoji-picker::-webkit-scrollbar {
+    width: 6px;
+}
+
+.emoji-picker::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.emoji-picker::-webkit-scrollbar-thumb {
+    background: #4A90E2;
+    border-radius: 3px;
+}
+</style>
+
+<div class="chat-fullscreen">
+<div class="chat-container">
+    <!-- Left Sidebar - Contact List -->
+    <div class="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <h2>Chats</h2>
+            <button class="btn-new-chat" onclick="showNewChatModal()">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="chat-tabs">
+            <button class="chat-tab active" data-tab="direct">DIRECT</button>
+            <button class="chat-tab" data-tab="groups">GROUPS</button>
+            <button class="chat-tab" data-tab="public">PUBLIC</button>
+        </div>
+
+        <!-- Search -->
+        <div class="chat-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search" id="searchInput">
+        </div>
+
+        <!-- Contact List -->
+        <div class="contact-list" id="contactList">
+            {% for friend in friends %}
+            <div class="contact-item" 
+                 data-user-id="{{ friend.id }}" 
+                 data-username="{{ friend.username }}"
+                 data-avatar="{{ friend.profile_pic if friend.profile_pic.startswith('http') else url_for('static', filename=friend.profile_pic.lstrip('/')) }}">
+                <img src="{{ friend.profile_pic if friend.profile_pic.startswith('http') else url_for('static', filename=friend.profile_pic.lstrip('/')) }}" alt="{{ friend.username }}" class="contact-avatar">
+                <div class="contact-info">
+                    <div class="contact-name">{{ friend.username }}</div>
+                    <div class="contact-message" id="last-msg-{{ friend.id }}">Click to start chatting</div>
                 </div>
-                {% endfor %}
+                <div class="contact-meta">
+                    <span class="contact-time" id="last-time-{{ friend.id }}"></span>
+                    <span class="unread-badge" id="unread-{{ friend.id }}" style="display: none;">0</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right Side - Chat Area -->
+    <div class="chat-main" id="chatMain">
+        <div class="chat-empty">
+            <i class="fas fa-comments" style="font-size: 5rem; color: #ddd; margin-bottom: 20px;"></i>
+            <h3>Select a chat to start messaging</h3>
+            <p>Choose a friend from the list to begin your conversation</p>
+        </div>
+
+        <!-- Active Chat (Hidden by default) -->
+        <div class="chat-active" id="chatActive" style="display: none;">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-header-user">
+                    <img src="" alt="User" class="chat-header-avatar" id="activeUserAvatar">
+                    <div class="chat-header-info">
+                        <div class="chat-header-name" id="activeUserName"></div>
+                        <div class="chat-header-status" id="activeUserStatus">Online</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="btn-icon"><i class="fas fa-phone"></i></button>
+                    <button class="btn-icon"><i class="fas fa-video"></i></button>
+                    <button class="btn-icon" onclick="toggleHeaderMenu()"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+                
+                <!-- Header Menu -->
+                <div class="header-menu" id="headerMenu">
+                    <div class="header-menu-item" onclick="viewProfile()">
+                        <i class="fas fa-user"></i>
+                        <span>View Profile</span>
+                    </div>
+                    <div class="header-menu-item" onclick="clearChat()">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Clear Chat</span>
+                    </div>
+                    <div class="header-menu-item danger" onclick="confirmRemoveFriend()">
+                        <i class="fas fa-user-times"></i>
+                        <span>Remove Friend</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="card-footer">
-                {% if user %}
-                <form method="POST" class="d-flex">
-                    {{ form.hidden_tag() }}
-                    {{ form.message(class="form-control me-2", placeholder="Type a message...", autocomplete="off") }}
-                    {{ form.submit(class="btn btn-primary") }}
-                </form>
-                {% else %}
-                <div class="text-center">
-                    <a href="/auth">Login to chat</a>
+            <!-- Messages Area -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <!-- File Preview Area -->
+            <div id="filePreviewArea"></div>
+
+            <!-- Message Input -->
+            <div class="chat-input-area">
+                <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+                <button class="btn-icon" onclick="document.getElementById('fileInput').click()" title="Attach file">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <input type="text" id="messageInput" placeholder="Type a message here..." onkeypress="handleKeyPress(event)">
+                <button class="btn-icon" onclick="toggleEmojiPicker()" title="Insert emoji">
+                    <i class="fas fa-smile"></i>
+                </button>
+                <button class="btn-send" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <!-- Emoji Picker -->
+            <div class="emoji-picker" id="emojiPicker">
+                <div class="emoji-picker-header">
+                    <button class="emoji-category-btn active" data-category="smileys" title="Smileys & People">😊</button>
+                    <button class="emoji-category-btn" data-category="animals" title="Animals & Nature">🐶</button>
+                    <button class="emoji-category-btn" data-category="food" title="Food & Drink">🍕</button>
+                    <button class="emoji-category-btn" data-category="activities" title="Activities">⚽</button>
+                    <button class="emoji-category-btn" data-category="travel" title="Travel & Places">✈️</button>
+                    <button class="emoji-category-btn" data-category="objects" title="Objects">💡</button>
+                    <button class="emoji-category-btn" data-category="symbols" title="Symbols">❤️</button>
                 </div>
-                {% endif %}
+                <div class="emoji-grid" id="emojiGrid">
+                    <!-- Emojis will be populated by JavaScript -->
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- New Chat Modal -->
+<div id="newChatModal" class="modal-overlay" style="display: none;" onclick="closeNewChatModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Start New Chat</h3>
+            <button onclick="closeNewChatModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" placeholder="Search friends..." class="form-control" id="friendSearchInput">
+            <div id="friendsList" style="margin-top: 20px;">
+                {% for friend in all_users %}
+                <div class="friend-item" 
+                     data-user-id="{{ friend.id }}"
+                     data-username="{{ friend.username }}"
+                     data-avatar="{{ friend.profile_pic if friend.profile_pic.startswith('http') else url_for('static', filename=friend.profile_pic.lstrip('/')) }}">
+                    <img src="{{ friend.profile_pic if friend.profile_pic.startswith('http') else url_for('static', filename=friend.profile_pic.lstrip('/')) }}" alt="{{ friend.username }}" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <span style="margin-left: 10px;">{{ friend.username }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="confirmation-modal">
+    <div class="confirmation-content">
+        <div class="confirmation-title" id="confirmationTitle">Confirm Action</div>
+        <div class="confirmation-message" id="confirmationMessage">Are you sure you want to proceed?</div>
+        <div class="confirmation-actions">
+            <button class="btn-cancel-modal" onclick="closeConfirmationModal()">Cancel</button>
+            <button class="btn-confirm" id="confirmButton">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Message Context Menu -->
+<div id="messageContextMenu" class="message-context-menu">
+    <div class="context-menu-item" onclick="editMessage()">
+        <i class="fas fa-edit"></i>
+        <span>Edit</span>
+    </div>
+    <div class="context-menu-item" onclick="copyMessage()">
+        <i class="fas fa-copy"></i>
+        <span>Copy</span>
+    </div>
+    <div class="context-menu-item delete" onclick="confirmDeleteMessage()">
+        <i class="fas fa-trash"></i>
+        <span>Delete</span>
+    </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+// Add chat page class to body
+document.body.classList.add('chat-page');
+
+// Hide footer on chat page
+const footer = document.querySelector('footer');
+if (footer) {
+    footer.style.display = 'none';
+}
+
+// Hide chatbot assistant on chat page
+const chatbotButton = document.getElementById('chatbot-button');
+if (chatbotButton) {
+    chatbotButton.style.display = 'none';
+}
+
+const chatbotWidget = document.querySelector('.chatbot-widget');
+if (chatbotWidget) {
+    chatbotWidget.style.display = 'none';
+}
+
+const chatbotContainer = document.querySelector('.chatbot-container');
+if (chatbotContainer) {
+    chatbotContainer.style.display = 'none';
+}
+
+// ============================================================
+// EMOJI PICKER FUNCTIONALITY
+// ============================================================
+
+const emojiCategories = {
+    smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴'],
+    animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕'],
+    food: ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🥔', '🍠', '🥐', '🍞', '🥖', '🥨', '🥯', '🧀', '🥚', '🍳', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🌭', '🍔', '🍟', '🍕'],
+    activities: ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '⛸️', '🥌', '🛷', '🎿', '⛷️', '🏂', '🏋️', '🤼', '🤸', '🤺', '⛹️', '🤾', '🏌️', '🏇', '🧘', '🏊', '🤽', '🚣', '🧗', '🚴', '🚵'],
+    travel: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛴', '🚲', '🛵', '🏍️', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '🚆', '🚇', '🚊', '🚉', '✈️', '🛫', '🛬', '🛩️', '💺', '🚁', '🛸'],
+    objects: ['⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️'],
+    symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔']
+};
+
+let selectedFile = null;
+
+function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    picker.classList.toggle('active');
+    
+    // Close picker when clicking outside
+    if (picker.classList.contains('active')) {
+        setTimeout(() => {
+            document.addEventListener('click', closeEmojiPickerOutside);
+        }, 0);
+    }
+}
+
+function closeEmojiPickerOutside(e) {
+    const picker = document.getElementById('emojiPicker');
+    const emojiBtn = e.target.closest('.btn-icon');
+    
+    if (!picker.contains(e.target) && (!emojiBtn || !emojiBtn.querySelector('.fa-smile'))) {
+        picker.classList.remove('active');
+        document.removeEventListener('click', closeEmojiPickerOutside);
+    }
+}
+
+function populateEmojis(category = 'smileys') {
+    const grid = document.getElementById('emojiGrid');
+    grid.innerHTML = '';
+    
+    const emojis = emojiCategories[category] || emojiCategories.smileys;
+    
+    emojis.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.className = 'emoji-item';
+        btn.textContent = emoji;
+        btn.onclick = () => insertEmoji(emoji);
+        grid.appendChild(btn);
+    });
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    
+    input.value = text.substring(0, start) + emoji + text.substring(end);
+    input.focus();
+    input.setSelectionRange(start + emoji.length, start + emoji.length);
+    
+    // Close picker
+    document.getElementById('emojiPicker').classList.remove('active');
+}
+
+// Emoji category switching
+document.querySelectorAll('.emoji-category-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        populateEmojis(this.dataset.category);
+    });
+});
+
+// Initialize emoji picker
+populateEmojis('smileys');
+
+// ============================================================
+// FILE ATTACHMENT FUNCTIONALITY
+// ============================================================
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    selectedFile = file;
+    window.selectedFile = file;
+    
+    // Show file preview
+    const previewArea = document.getElementById('filePreviewArea');
+    const fileSize = (file.size / 1024).toFixed(2); // KB
+    const icon = getFileIcon(file.type);
+    
+    previewArea.innerHTML = `
+        <div class="file-preview">
+            <i class="${icon} file-preview-icon"></i>
+            <div class="file-preview-info">
+                <div class="file-preview-name">${escapeHtml(file.name)}</div>
+                <div class="file-preview-size">${fileSize} KB</div>
+            </div>
+            <button class="file-preview-remove" onclick="removeFile()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+}
+
+function getFileIcon(fileType) {
+    if (fileType.startsWith('image/')) return 'fas fa-image';
+    if (fileType.includes('pdf')) return 'fas fa-file-pdf';
+    if (fileType.includes('word') || fileType.includes('document')) return 'fas fa-file-word';
+    if (fileType.includes('text')) return 'fas fa-file-alt';
+    return 'fas fa-file';
+}
+
+function removeFile() {
+    selectedFile = null;
+    window.selectedFile = null;
+    document.getElementById('filePreviewArea').innerHTML = '';
+    document.getElementById('fileInput').value = '';
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ============================================================
+// HEADER MENU FUNCTIONALITY
+// ============================================================
+
+function toggleHeaderMenu() {
+    const menu = document.getElementById('headerMenu');
+    menu.classList.toggle('active');
+    
+    // Close when clicking outside
+    if (menu.classList.contains('active')) {
+        setTimeout(() => {
+            document.addEventListener('click', closeHeaderMenuOutside);
+        }, 0);
+    }
+}
+
+function closeHeaderMenuOutside(e) {
+    const menu = document.getElementById('headerMenu');
+    if (!menu.contains(e.target) && !e.target.closest('.btn-icon')) {
+        menu.classList.remove('active');
+        document.removeEventListener('click', closeHeaderMenuOutside);
+    }
+}
+
+function viewProfile() {
+    // Redirect to user profile
+    if (window.activeUserId) {
+        window.location.href = `/profile/${window.activeUserId}`;
+    }
+    closeHeaderMenu();
+}
+
+function clearChat() {
+    showConfirmation(
+        'Clear Chat History',
+        'Are you sure you want to delete all messages with this user? This action cannot be undone.',
+        clearChatConfirmed
+    );
+    closeHeaderMenu();
+}
+
+function clearChatConfirmed() {
+    if (!window.activeUserId) return;
+    
+    fetch(`/chat/clear/${window.activeUserId}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('chatMessages').innerHTML = '';
+            showNotification('Chat history cleared');
+        } else {
+            alert('Failed to clear chat: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error clearing chat:', error);
+        alert('Failed to clear chat');
+    });
+}
+
+function confirmRemoveFriend() {
+    showConfirmation(
+        'Remove Friend',
+        `Are you sure you want to remove ${window.activeUserName} from your friends? You won't be able to message each other anymore.`,
+        removeFriendConfirmed
+    );
+    closeHeaderMenu();
+}
+
+function removeFriendConfirmed() {
+    if (!window.activeUserId) return;
+    
+    fetch(`/remove_friend/${window.activeUserId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove from contact list
+            const contactItem = document.querySelector(`[data-user-id="${window.activeUserId}"]`);
+            if (contactItem) {
+                contactItem.remove();
+            }
+            
+            // Hide active chat
+            document.getElementById('chatActive').style.display = 'none';
+            document.querySelector('.chat-empty').style.display = 'flex';
+            
+            showNotification('Friend removed');
+        } else {
+            alert('Failed to remove friend: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error removing friend:', error);
+        alert('Failed to remove friend');
+    });
+}
+
+function closeHeaderMenu() {
+    document.getElementById('headerMenu').classList.remove('active');
+}
+
+// ============================================================
+// DRAGGABLE FUNCTIONALITY
+// ============================================================
+
+function makeDraggable(element) {
+    if (!element) return;
+    
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    element.onmousedown = dragMouseDown;
+    
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        
+        // Get initial mouse position
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+    
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        
+        // Calculate new cursor position
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        // Set element's new position
+        let newTop = element.offsetTop - pos2;
+        let newLeft = element.offsetLeft - pos1;
+        
+        // Keep within viewport bounds
+        newTop = Math.max(70, Math.min(newTop, window.innerHeight - element.offsetHeight));
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - element.offsetWidth));
+        
+        element.style.top = newTop + "px";
+        element.style.left = newLeft + "px";
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+    }
+    
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+// Make accessibility tools draggable
+const accessibilityTools = document.querySelector('.accessibility-tools');
+if (accessibilityTools) {
+    accessibilityTools.style.cursor = 'move';
+    makeDraggable(accessibilityTools);
+}
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+
+function showNotification(message) {
+    // Simple notification - you can enhance this
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #4A90E2;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 3000;
+        animation: slideIn 0.3s;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+<script>
+// Set current user ID for chat.js
+window.currentUserIdFromTemplate = {{ user.id if user else 'null' }};
+window.currentUsernameFromTemplate = "{{ user.username if user else '' }}";
+window.selectedFile = null; // Make it accessible to chat.js
+window.activeUserId = null;
+window.activeUserName = null;
+console.log('Current User ID from template:', window.currentUserIdFromTemplate);
+console.log('Current Username from template:', window.currentUsernameFromTemplate);
+</script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
 {% endblock %}
+</document_content>

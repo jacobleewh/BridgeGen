@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="big-card">
+  <div class="big-card-header">
+    {% if pending %}
+      <h4>Delete Story</h4>
+    {% else %}
+      <h4>Story Deleted</h4>
+    {% endif %}
+  </div>
+  <div class="big-card-body">
+    {% if pending %}
+      <p>Are you sure you want to delete <strong>{{ story.title }}</strong>?</p>
+      <p class="text-muted">This action cannot be undone.</p>
+      
+      <div class="mt-4 d-flex gap-2">
+        <form method="post" style="display: inline;">
+          <input type="hidden" name="confirm" value="yes">
+          <button class="btn btn-danger" type="submit">Delete</button>
+        </form>
+        <a class="btn btn-outline-secondary" href="{{ url_for('story_my_stories') }}">Cancel</a>
+      </div>
+    {% else %}
+      <p>The story has been successfully removed.</p>
+      <div class="mt-4 d-flex gap-2">
+        <a class="btn btn-primary" href="{{ url_for('story_my_stories') }}">Back to My Stories</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('story_home') }}">Go to Home</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='story_style.css') }}">
+<script src="{{ url_for('static', filename='js/story_script.js') }}"></script>
+{% endblock %}

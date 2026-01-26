@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow-lg">
+        <div class="card-header" style="background: var(--gradient); color: white;">
+          <h3 class="mb-0">
+            <i class="bi bi-plus-circle"></i> Create Event
+          </h3>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" class="row g-3">
+            {{ form.hidden_tag() }}
+            
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-heading"></i> {{ form.title.label }}
+              </label>
+              {{ form.title(class="form-control form-control-lg") }}
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-calendar"></i> {{ form.date.label }}
+              </label>
+              {{ form.date(class="form-control form-control-lg") }}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-card-text"></i> {{ form.description.label }}
+              </label>
+              {{ form.description(class="form-control", rows="4") }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-clock"></i> {{ form.time.label }}
+              </label>
+              {{ form.time(class="form-control form-control-lg") }}
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-geo-alt"></i> {{ form.location.label }}
+              </label>
+              {{ form.location(class="form-control form-control-lg") }}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-tag"></i> {{ form.category.label }}
+              </label>
+              {{ form.category(class="form-select form-select-lg") }}
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-people"></i> {{ form.slots.label }}
+              </label>
+              {{ form.slots(class="form-control form-control-lg", type="number") }}
+            </div>
+
+            <!-- Image upload -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-cloud-upload"></i> Upload Image (Optional)
+              </label>
+              <div class="file-drop" id="file-drop-create">
+                <div class="file-drop-inner">
+                  <div id="file-preview-create" class="file-preview">
+                    <img src="{{ url_for('static', filename='uploads/default.png') }}" alt="default image">
+                  </div>
+                  <div class="file-drop-text">Drag & drop image here or click to choose</div>
+                </div>
+                {{ form.image(class="form-control", id="image-input-create", style="display:none;") }}
+              </div>
+              <small class="form-text text-muted">Add an image to make your event more attractive</small>
+            </div>
+            
+            <div class="col-12 d-flex gap-2 mt-4">
+              <button class="btn btn-primary btn-lg flex-grow-1" type="submit">
+                <i class="bi bi-check-circle"></i> Create Event
+              </button>
+              <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('event_browse') }}">
+                <i class="bi bi-x-circle"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// drag & drop + preview for create form
+const dropC = document.getElementById('file-drop-create');
+const inputC = document.getElementById('image-input-create');
+const previewC = document.getElementById('file-preview-create');
+
+function showPreviewCreate(file){
+  const img = document.createElement('img');
+  img.src = URL.createObjectURL(file);
+  img.onload = () => URL.revokeObjectURL(img.src);
+  previewC.innerHTML = '';
+  previewC.appendChild(img);
+}
+
+dropC.addEventListener('click', () => inputC.click());
+
+['dragenter', 'dragover'].forEach(ev => {
+  dropC.addEventListener(ev, e => { e.preventDefault(); dropC.classList.add('dragover'); });
+});
+['dragleave', 'drop'].forEach(ev => {
+  dropC.addEventListener(ev, e => { e.preventDefault(); dropC.classList.remove('dragover'); });
+});
+
+dropC.addEventListener('drop', e => {
+  const files = e.dataTransfer.files;
+  if (files && files[0]) {
+    inputC.files = files;
+    showPreviewCreate(files[0]);
+  }
+});
+
+inputC.addEventListener('change', () => {
+  if (inputC.files && inputC.files[0]) showPreviewCreate(inputC.files[0]);
+});
+</script>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/story_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/event_style.css') }}">
+{% endblock %}

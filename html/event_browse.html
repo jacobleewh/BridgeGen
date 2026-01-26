@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Browse Events Functionality -->
+<div class="big-card mb-4">
+  <div class="big-card-header">
+    <h5>Events</h5>
+  </div>
+  <div class="big-card-body">
+
+    <!-- Search and Filter -->
+    <form method="get" class="row g-2 mb-4">
+      <div class="col-md-6">
+        <input type="text" class="form-control" name="q" placeholder="Search..." value="{{ q or '' }}">
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" name="category">
+          <option value="">All categories</option>
+          <option value="Cooking" {% if category=='Cooking' %}selected{% endif %}>Cooking</option>
+          <option value="Craft" {% if category=='Craft' %}selected{% endif %}>Craft</option>
+          <option value="Technology" {% if category=='Technology' %}selected{% endif %}>Technology</option>
+          <option value="Environmental" {% if category=='Environmental' %}selected{% endif %}>Environmental</option>
+          <option value="Fitness" {% if category=='Fitness' %}selected{% endif %}>Fitness</option>
+          <option value="Music" {% if category=='Music' %}selected{% endif %}>Music</option>
+          <option value="Outdoor" {% if category=='Outdoor' %}selected{% endif %}>Outdoor</option>
+          <option value="Social" {% if category=='Social' %}selected{% endif %}>Social</option>
+          <option value="Art" {% if category=='Art' %}selected{% endif %}>Art</option>
+          <option value="Others" {% if category=='Others' %}selected{% endif %}>Others</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-secondary w-100" type="submit">Filter</button>
+      </div>
+    </form>
+
+    <!-- Events Feed -->
+    {% if events %}
+      <div class="row">
+        {% for e in events %}
+          <div class="col-md-6 col-lg-4 mb-4">
+            {% if current_user.is_authenticated and current_user.username == e.host %}
+              <!-- My Event Card -->
+              <div class="card h-100 shadow-sm border-primary" style="border-left: 5px solid #4A90E2;">
+                {% if e.image and e.image != 'default.png' %}
+                  <img src="{{ url_for('static', filename='uploads/' + e.image) }}" class="card-img-top" alt="Event image" style="height: 200px; object-fit: cover;">
+                {% else %}
+                  <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="bi bi-calendar-event" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
+                  </div>
+                {% endif %}
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0">{{ e.title }}</h6>
+                    <span class="badge bg-primary">Your Event</span>
+                  </div>
+                  <p class="card-text text-muted small">{{ e.description[:100] }}{% if e.description|length > 100 %}...{% endif %}</p>
+                  
+                  <div class="mb-2">
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-calendar3"></i> {{ e.date.strftime('%d %b %Y') }}
+                    </div>
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-clock"></i> {{ e.time.strftime('%I:%M %p') }}
+                    </div>
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-geo-alt"></i> {{ e.location }}
+                    </div>
+                    <div class="text-muted small">
+                      <span class="badge bg-secondary">{{ e.category }}</span>
+                      <span class="badge bg-info text-dark">{{ e.slots }} slots</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                  <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('event_details', event_id=e.id) }}">View</a>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <!-- Other User's Event Card -->
+              <div class="card h-100 shadow-sm border-success" style="border-left: 5px solid #28a745;">
+                {% if e.image and e.image != 'default.png' %}
+                  <img src="{{ url_for('static', filename='uploads/' + e.image) }}" class="card-img-top" alt="Event image" style="height: 200px; object-fit: cover;">
+                {% else %}
+                  <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <i class="bi bi-calendar-event" style="font-size: 4rem; color: white; opacity: 0.5;"></i>
+                  </div>
+                {% endif %}
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                      <h6 class="card-title mb-0">{{ e.title }}</h6>
+                      <small class="text-muted">by {{ e.host }}</small>
+                    </div>
+                    <span class="badge bg-success">Others' Event</span>
+                  </div>
+                  <p class="card-text text-muted small">{{ e.description[:100] }}{% if e.description|length > 100 %}...{% endif %}</p>
+                  
+                  <div class="mb-2">
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-calendar3"></i> {{ e.date.strftime('%d %b %Y') }}
+                    </div>
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-clock"></i> {{ e.time.strftime('%I:%M %p') }}
+                    </div>
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-geo-alt"></i> {{ e.location }}
+                    </div>
+                    <div class="text-muted small">
+                      <span class="badge bg-secondary">{{ e.category }}</span>
+                      <span class="badge bg-info text-dark">{{ e.slots }} slots</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                  <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('event_details', event_id=e.id) }}">View</a>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-muted">No events match your filters.</p>
+    {% endif %}
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/story_style.css') }}">
+{% endblock %}

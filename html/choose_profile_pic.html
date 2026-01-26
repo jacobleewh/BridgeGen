@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='choose_profile_pic.css') }}">
+
+<div style="text-align: center; padding: 50px 20px;">
+    
+    <img src="{{ user.profile_pic }}" class="current-avatar-fixed" id="previewImg">
+    <h2 style="margin: 0 0 30px 0; color: #333;">{{ user.username }}</h2>
+
+    <div class="upload-card-fixed">
+        
+        <div class="upload-title-fixed">Upload from Device</div>
+        
+        <form action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
+            
+            <input type="file" name="file" id="fileInput" accept="image/*">
+            
+            <div class="button-row">
+                
+                <label for="fileInput" class="btn-upload-custom">
+                    <i class="fas fa-camera"></i> Upload Photo
+                </label>
+
+                <a href="{{ url_for('profile') }}" class="btn-cancel-custom">
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+    </div>
+
+    <h4 style="color: #444; margin-bottom: 20px;">Suggested Profile Pictures</h4>
+    <div class="avatar-grid">
+        {% set seeds = ['Felix', 'Aneka', 'Willow', 'Bear', 'Bandit', 'Jasper'] %}
+        {% for seed in seeds %}
+        <form action="{{ url_for('update_profile_pic') }}" method="POST">
+            <input type="hidden" name="avatar_url" value="https://api.dicebear.com/7.x/avataaars/svg?seed={{ seed }}">
+            <button type="submit" class="avatar-btn">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ seed }}" class="avatar-img">
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+    document.getElementById("fileInput").onchange = function() {
+        if(this.files && this.files[0]) {
+            document.getElementById("uploadForm").submit();
+        }
+    };
+</script>
+
+{% endblock %}

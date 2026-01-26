@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="big-card mb-4">
+  <div class="big-card-header">
+    <h5>My Events</h5>
+  </div>
+  <div class="big-card-body">
+
+    <h6>Calendar — {{ month_name }} {{ sel_year }}</h6>
+<div style="margin-bottom:8px;">
+  <a class="btn btn-outline-secondary" href="{{ url_for('event_my_events', month=prev_month, year=prev_year) }}">← Prev</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('event_my_events', month=next_month, year=next_year) }}">Next →</a>
+</div>
+
+<div class="calendar" style="grid-template-columns: repeat(7, 1fr);">
+  <div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div>
+  <div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday">Sat</div><div class="weekday">Sun</div>
+
+  {# render leading blanks to align first day of month #}
+  {% for i in range(leading_blanks) %}
+    <div class="day" style="background:transparent;border:none;"></div>
+  {% endfor %}
+
+  {# render actual days #}
+  {% for d in range(1, num_days + 1) %}
+    {% set attended = d in attended_days %}
+    {% set highlight = (d in joined_days) and not attended %}
+    <div class="day {% if attended %}attended{% elif highlight %}highlight{% endif %}">
+      {{ d }}
+    </div>
+  {% endfor %}
+</div>
+
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <h6>Events Joined</h6>
+        {% for e in joined %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title">{{ e.title }}</h6>
+              <p class="card-text">{{ e.description }}</p>
+              <div class="text-muted small mb-2">
+                <div><i class="bi bi-calendar-event"></i> {{ e.date.strftime('%d %b %Y') }} at {{ e.time.strftime('%I:%M %p') }}</div>
+                <div><i class="bi bi-geo-alt"></i> {{ e.location }}</div>
+                <div><i class="bi bi-tag"></i> {{ e.category }}</div>
+              </div>
+            </div>
+            <div class="card-footer bg-white d-flex gap-2 flex-wrap">
+              <form method="post" action="{{ url_for('event_leave', event_id=e.id) }}" style="display:inline;">
+                <button class="btn btn-sm btn-danger" type="submit"><i class="bi bi-box-arrow-right"></i> Leave</button>
+              </form>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('event_reflection', event_id=e.id) }}"><i class="bi bi-chat-left-text"></i> Post Reflection</a>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-muted">No joined events.</p>
+        {% endfor %}
+      </div>
+
+      <div class="col-md-6">
+        <h6>Events Created</h6>
+        {% for e in created %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title">{{ e.title }}</h6>
+              <p class="card-text">{{ e.description }}</p>
+              <div class="text-muted small mb-2">
+                <div><i class="bi bi-calendar-event"></i> {{ e.date.strftime('%d %b %Y') }} at {{ e.time.strftime('%I:%M %p') }}</div>
+              </div>
+            </div>
+            <div class="card-footer bg-white d-flex gap-2 flex-wrap">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('event_edit', event_id=e.id) }}"><i class="bi bi-pencil"></i> Edit</a>
+              <form method="post" action="{{ url_for('event_delete', event_id=e.id) }}" style="display:inline;" onsubmit="return confirm('Delete this event?');">
+                <button class="btn btn-sm btn-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+              </form>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('event_creator_reflection', event_id=e.id) }}"><i class="bi bi-chat-left-text"></i> Post Reflection</a>
+            </div>
+          </div>
+        {% else %}
+          <p class="text-muted">No created events.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/story_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/event_style.css') }}">
+{% endblock %}
